@@ -1,10 +1,10 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
-import com.mvpnest.fleetmanagement.service.UserService;
+import com.mvpnest.fleetmanagement.service.MissionDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class MissionDocumentServiceImpl implements MissionDocumentService {
 }
