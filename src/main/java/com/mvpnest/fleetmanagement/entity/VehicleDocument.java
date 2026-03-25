@@ -33,4 +33,12 @@ public class VehicleDocument extends BaseEntity {
     @Column(nullable = false)
     private Integer year;
 
+    // ================== ASSOCIATION ==================
+
+    // VehicleDocument (*) → Vehicle (1)
+    @ManyToOne
+    @JoinColumn(name = "vehicle_id")
+    private Vehicle vehicle;
+    // fix: each document belongs to one vehicle
+
 }

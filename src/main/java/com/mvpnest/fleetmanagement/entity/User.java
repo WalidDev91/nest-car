@@ -4,6 +4,7 @@ import com.mvpnest.fleetmanagement.enums.RoleType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -40,4 +41,26 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private boolean isValidate = true;
+
+    // ================== ASSOCIATIONS ==================
+
+    // 1/ User → User (Admin manages users)
+    @ManyToOne
+    @JoinColumn(name = "admin_id")
+    private User admin;
+
+    @OneToMany(mappedBy = "admin")
+    private List<User> drivers;
+
+    // 2/ User (Admin / Fleet Manager) → Vehicles
+    @OneToMany(mappedBy = "admin")
+    private List<Vehicle> vehicles;
+
+    // 3/ User (Driver) → Missions
+    @OneToMany(mappedBy = "driver")
+    private List<Mission> missions;
+
+    // 4/ User (Driver) → DriverDocuments
+    @OneToMany(mappedBy = "driver")
+    private List<DriverDocument> driverDocuments;
 }

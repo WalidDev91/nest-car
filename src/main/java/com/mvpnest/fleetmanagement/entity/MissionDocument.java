@@ -25,4 +25,12 @@ public class MissionDocument extends BaseEntity {
     @Column(nullable = false)
     private String fileUrl;
 
+    // ================== ASSOCIATION ==================
+
+    // MissionDocument (*) → Mission (1)
+    @ManyToOne
+    @JoinColumn(name = "mission_id")
+    private Mission mission;
+    // fix: each mission document belongs to one mission
+
 }

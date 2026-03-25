@@ -41,4 +41,12 @@ public class DriverDocument {
 
     private LocalDateTime validatedAt;
 
+    // ================== ASSOCIATION ==================
+
+    // DriverDocument (*) → User (1) labeled 'drivers'
+    @ManyToOne
+    @JoinColumn(name = "driver_id")
+    private User driver;
+    // fix: each driver document belongs to one driver
+
 }

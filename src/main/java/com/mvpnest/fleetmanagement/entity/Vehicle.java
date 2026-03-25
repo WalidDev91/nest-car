@@ -3,6 +3,7 @@ package com.mvpnest.fleetmanagement.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -30,4 +31,22 @@ public class Vehicle extends BaseEntity {
 
     @Column(nullable = false)
     private Integer year;
+
+    // ================== ASSOCIATIONS ==================
+
+    // 1/ Vehicle (*) → User (1) "admin"
+    @ManyToOne
+    @JoinColumn(name = "admin_id")
+    private User admin;
+    // fix: each vehicle is managed by one admin
+
+    // 2/ Vehicle (1) → Mission (*)
+    @OneToMany(mappedBy = "vehicle")
+    private List<Mission> missions;
+    // fix: one vehicle can be used in multiple missions
+
+    // 3/ Vehicle (1) → VehicleDocument (*)
+    @OneToMany(mappedBy = "vehicle")
+    private List<VehicleDocument> vehicleDocuments;
+    // fix: one vehicle has multiple documents
 }

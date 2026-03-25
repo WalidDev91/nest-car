@@ -29,4 +29,14 @@ public class MissionVehiclePhoto {
     @Column(nullable = false)
     private LocalDateTime takenAt;
 
+    // ================== ASSOCIATION ==================
+
+    // MissionVehiclePhoto (*) → MissionVehicleInspection (1)
+    @ManyToOne
+    @JoinColumn(name = "inspection_id")
+    private MissionVehicleInspection inspection;
+    // fix: each photo belongs to one inspection
+
+
+
 }
