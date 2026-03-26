@@ -7,4 +7,6 @@ import java.util.UUID;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
+
+    Vehicle findByPlateNumber(String plateNumber);
 }
