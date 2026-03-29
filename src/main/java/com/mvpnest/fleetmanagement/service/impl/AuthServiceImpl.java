@@ -5,6 +5,7 @@ import com.mvpnest.fleetmanagement.dto.LoginRequest;
 import com.mvpnest.fleetmanagement.dto.RegisterRequest;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
+import com.mvpnest.fleetmanagement.security.JwtService;
 import com.mvpnest.fleetmanagement.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,27 +17,9 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    @Override
-    public AuthResponse register(RegisterRequest request) {
-
-        User user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .phone(request.getPhone())
-                .role(request.getRole())
-                .isValidate(true)
-                .build();
-
-        userRepository.save(user);
-
-        return AuthResponse.builder()
-                .token("TEMP_TOKEN") // will replace with JWT later
-                .build();
-    }
-
+    // ================== LOGIN ==================
     @Override
     public AuthResponse login(LoginRequest request) {
 
@@ -47,8 +30,40 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid password");
         }
 
+        String token = jwtService.generateToken(user.getEmail());
+
         return AuthResponse.builder()
-                .token("TEMP_TOKEN")
+                .token(token)
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .build();
+    }
+
+    // ================== REGISTER ==================
+    @Override
+    public AuthResponse register(RegisterRequest request) {
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        User user = User.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(request.getRole())
+                .isValidate(true)
+                .build();
+
+        userRepository.save(user);
+
+        String token = jwtService.generateToken(user.getEmail());
+
+        return AuthResponse.builder()
+                .token(token)
+                .email(user.getEmail())
+                .role(user.getRole().name())
                 .build();
     }
 }
