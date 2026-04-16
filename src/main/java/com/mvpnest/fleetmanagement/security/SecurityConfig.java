@@ -22,12 +22,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                .cors(cors -> {
+                }) // enable CORS
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/drivers/**").permitAll() // allow drivers for now
+                        .requestMatchers("/api/vehicles/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -43,32 +47,4 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//
-//        http
-//                .csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests(auth -> auth
-//                        // ✅ Public endpoints (NO AUTH REQUIRED)
-//                        .requestMatchers("/api/auth/**").permitAll()
-//
-//                        // 🔒 Everything else requires authentication
-//                        .anyRequest().authenticated()
-//                );
-//
-//        return http.build();
-//    }
-
-
-//@Bean
-//public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//
-//    http
-//            .csrf(csrf -> csrf.disable())
-//            .authorizeHttpRequests(auth -> auth
-//                    .anyRequest().permitAll() // 🔥 allow everything (TEMP for testing)
-//            );
-//
-//    return http.build();
-//}
 }
