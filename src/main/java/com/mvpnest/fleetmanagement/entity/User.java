@@ -1,5 +1,6 @@
 package com.mvpnest.fleetmanagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -50,17 +51,21 @@ public class User extends BaseEntity {
     private User admin;
 
     @OneToMany(mappedBy = "admin")
+    @JsonIgnore
     private List<User> drivers;
 
     // 2/ User (Admin / Fleet Manager) → Vehicles
     @OneToMany(mappedBy = "admin")
+    @JsonIgnore
     private List<Vehicle> vehicles;
 
     // 3/ User (Driver) → Missions
     @OneToMany(mappedBy = "driver")
+    @JsonIgnore
     private List<Mission> missions;
 
     // 4/ User (Driver) → DriverDocuments
     @OneToMany(mappedBy = "driver")
+    @JsonIgnore
     private List<DriverDocument> driverDocuments;
 }

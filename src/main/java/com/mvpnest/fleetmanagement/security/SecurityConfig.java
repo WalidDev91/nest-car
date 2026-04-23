@@ -22,15 +22,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .cors(cors -> {
-                }) // enable CORS
+                .cors(cors -> {}) // keep this
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/drivers/**").permitAll() // allow drivers for now
+                        .requestMatchers("/api/users/**").permitAll()     // Temporary JWT
                         .requestMatchers("/api/vehicles/**").permitAll()
                         .anyRequest().authenticated()
                 )
