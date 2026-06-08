@@ -1,6 +1,10 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
+import com.mvpnest.fleetmanagement.dto.user.CreateUserRequest;
+import com.mvpnest.fleetmanagement.dto.user.UpdateUserRequest;
+import com.mvpnest.fleetmanagement.dto.user.UserDTO;
 import com.mvpnest.fleetmanagement.entity.User;
+import com.mvpnest.fleetmanagement.mapper.UserMapper;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.service.UserService;
@@ -15,47 +19,92 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Override
-    public User createUser(User user) {
-        return userRepository.save(user);
+    public UserDTO createUser(CreateUserRequest request) {
+
+        User admin = null;
+
+        if (request.getAdminId() != null) {
+            admin = userRepository.findById(request.getAdminId())
+                    .orElseThrow(() -> new RuntimeException("Admin not found"));
+        }
+
+        User user = User.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .phone(request.getPhone())
+                .role(request.getRole())
+                .admin(admin)
+                .build();
+
+        return userMapper.toDTO(
+                userRepository.save(user)
+        );
     }
 
     @Override
-    public User getUserById(UUID id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+    public UserDTO getUserById(UUID id) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return userMapper.toDTO(user);
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers() {
+
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::toDTO)
+                .toList();
     }
 
     @Override
-    public List<User> getUsersByRole(RoleType role) {
-        return userRepository.findByRole(role);
+    public List<UserDTO> getUsersByRole(RoleType role) {
+
+        return userRepository.findByRole(role)
+                .stream()
+                .map(userMapper::toDTO)
+                .toList();
     }
 
     @Override
-    public User updateUser(UUID id, User user) {
-        User existing = getUserById(id);
+    public UserDTO updateUser(UUID id, UpdateUserRequest request) {
 
-        // ⚠️ Update only relevant fields (adjust based on your User entity)
-        existing.setFirstName(user.getFirstName());
-        existing.setLastName(user.getLastName());
-        existing.setEmail(user.getEmail());
-        existing.setRole(user.getRole());
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // ⚠️ Be careful with password (don’t overwrite blindly later)
-        existing.setPassword(user.getPassword());
+        User admin = null;
 
-        return userRepository.save(existing);
+        if (request.getAdminId() != null) {
+            admin = userRepository.findById(request.getAdminId())
+                    .orElseThrow(() -> new RuntimeException("Admin not found"));
+        }
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+        user.setRole(request.getRole());
+        user.setValidate(request.isValidate());
+        user.setAdmin(admin);
+
+        return userMapper.toDTO(
+                userRepository.save(user)
+        );
     }
 
     @Override
     public void deleteUser(UUID id) {
-        User user = getUserById(id);
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         userRepository.delete(user);
     }
 }

@@ -1,6 +1,8 @@
 package com.mvpnest.fleetmanagement.controller;
 
-import com.mvpnest.fleetmanagement.entity.User;
+import com.mvpnest.fleetmanagement.dto.user.CreateUserRequest;
+import com.mvpnest.fleetmanagement.dto.user.UpdateUserRequest;
+import com.mvpnest.fleetmanagement.dto.user.UserDTO;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,36 +18,43 @@ public class UserController {
 
     private final UserService userService;
 
-    // CREATE user
     @PostMapping
-    public User create(@RequestBody User user) {
-        return userService.createUser(user);
+    public UserDTO create(
+            @RequestBody CreateUserRequest request
+    ) {
+        return userService.createUser(request);
     }
 
-    // GET user by ID
     @GetMapping("/{id}")
-    public User getById(@PathVariable UUID id) {
+    public UserDTO getById(
+            @PathVariable UUID id
+    ) {
         return userService.getUserById(id);
     }
 
-    // GET all users (or filter by role optional)
     @GetMapping
-    public List<User> getAll(@RequestParam(required = false) RoleType role) {
+    public List<UserDTO> getAll(
+            @RequestParam(required = false) RoleType role
+    ) {
         if (role != null) {
             return userService.getUsersByRole(role);
         }
+
         return userService.getAllUsers();
     }
 
-    // UPDATE user
     @PutMapping("/{id}")
-    public User update(@PathVariable UUID id, @RequestBody User user) {
-        return userService.updateUser(id, user);
+    public UserDTO update(
+            @PathVariable UUID id,
+            @RequestBody UpdateUserRequest request
+    ) {
+        return userService.updateUser(id, request);
     }
 
-    // DELETE user
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) {
+    public void delete(
+            @PathVariable UUID id
+    ) {
         userService.deleteUser(id);
     }
 }

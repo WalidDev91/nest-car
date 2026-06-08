@@ -1,6 +1,8 @@
 package com.mvpnest.fleetmanagement.service;
 
-import com.mvpnest.fleetmanagement.entity.User;
+import com.mvpnest.fleetmanagement.dto.user.CreateUserRequest;
+import com.mvpnest.fleetmanagement.dto.user.UpdateUserRequest;
+import com.mvpnest.fleetmanagement.dto.user.UserDTO;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 
 import java.util.List;
@@ -8,15 +10,15 @@ import java.util.UUID;
 
 public interface UserService {
 
-    User createUser(User user);
+    UserDTO createUser(CreateUserRequest request);
 
-    User getUserById(UUID id);
+    UserDTO getUserById(UUID id);
 
-    List<User> getAllUsers();
+    List<UserDTO> getAllUsers();
 
-    List<User> getUsersByRole(RoleType role);
+    List<UserDTO> getUsersByRole(RoleType role);
 
-    User updateUser(UUID id, User user);
+    UserDTO updateUser(UUID id, UpdateUserRequest request);
 
     void deleteUser(UUID id);
 }

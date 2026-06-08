@@ -1,8 +1,8 @@
 package com.mvpnest.fleetmanagement.service;
 
-import com.mvpnest.fleetmanagement.dto.AuthResponse;
-import com.mvpnest.fleetmanagement.dto.LoginRequest;
-import com.mvpnest.fleetmanagement.dto.RegisterRequest;
+import com.mvpnest.fleetmanagement.dto.auth.AuthResponse;
+import com.mvpnest.fleetmanagement.dto.auth.LoginRequest;
+import com.mvpnest.fleetmanagement.dto.auth.RegisterRequest;
 
 public interface AuthService {
 
