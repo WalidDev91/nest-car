@@ -1,19 +1,21 @@
 package com.mvpnest.fleetmanagement.service;
 
-import com.mvpnest.fleetmanagement.entity.Vehicle;
+import com.mvpnest.fleetmanagement.dto.vehicle.VehicleCreateRequest;
+import com.mvpnest.fleetmanagement.dto.vehicle.VehicleDTO;
+import com.mvpnest.fleetmanagement.dto.vehicle.VehicleUpdateRequest;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface VehicleService {
 
-    Vehicle createVehicle(Vehicle vehicle);
+    VehicleDTO createVehicle(VehicleCreateRequest request);
 
-    Vehicle getVehicleById(UUID id);
+    VehicleDTO getVehicleById(UUID id);
 
-    List<Vehicle> getAllVehicles();
+    List<VehicleDTO> getAllVehicles();
 
-    Vehicle updateVehicle(UUID id, Vehicle vehicle);
+    VehicleDTO updateVehicle(UUID id, VehicleUpdateRequest request);
 
     void deleteVehicle(UUID id);
 }

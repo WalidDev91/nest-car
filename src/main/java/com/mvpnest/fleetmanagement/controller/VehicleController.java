@@ -1,6 +1,8 @@
 package com.mvpnest.fleetmanagement.controller;
 
-import com.mvpnest.fleetmanagement.entity.Vehicle;
+import com.mvpnest.fleetmanagement.dto.vehicle.VehicleDTO;
+import com.mvpnest.fleetmanagement.dto.vehicle.VehicleCreateRequest;
+import com.mvpnest.fleetmanagement.dto.vehicle.VehicleUpdateRequest;
 import com.mvpnest.fleetmanagement.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,23 +18,24 @@ public class VehicleController {
     private final VehicleService vehicleService;
 
     @PostMapping
-    public Vehicle create(@RequestBody Vehicle vehicle) {
-        return vehicleService.createVehicle(vehicle);
+    public VehicleDTO create(@RequestBody VehicleCreateRequest request) {
+        return vehicleService.createVehicle(request);
     }
 
     @GetMapping("/{id}")
-    public Vehicle getById(@PathVariable UUID id) {
+    public VehicleDTO getById(@PathVariable UUID id) {
         return vehicleService.getVehicleById(id);
     }
 
     @GetMapping
-    public List<Vehicle> getAll() {
+    public List<VehicleDTO> getAll() {
         return vehicleService.getAllVehicles();
     }
 
     @PutMapping("/{id}")
-    public Vehicle update(@PathVariable UUID id, @RequestBody Vehicle vehicle) {
-        return vehicleService.updateVehicle(id, vehicle);
+    public VehicleDTO update(@PathVariable UUID id,
+                             @RequestBody VehicleUpdateRequest request) {
+        return vehicleService.updateVehicle(id, request);
     }
 
     @DeleteMapping("/{id}")
