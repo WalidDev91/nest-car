@@ -1,4 +1,4 @@
-package com.mvpnest.fleetmanagement.dto;
+package com.mvpnest.fleetmanagement.dto.mission;
 
 import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import lombok.*;

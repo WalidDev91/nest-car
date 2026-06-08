@@ -1,19 +1,21 @@
 package com.mvpnest.fleetmanagement.service;
 
-import com.mvpnest.fleetmanagement.entity.Mission;
+import com.mvpnest.fleetmanagement.dto.mission.CreateMissionRequest;
+import com.mvpnest.fleetmanagement.dto.mission.MissionDTO;
+import com.mvpnest.fleetmanagement.dto.mission.UpdateMissionRequest;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface MissionService {
 
-    Mission createMission(Mission mission);
+    MissionDTO createMission(CreateMissionRequest request);
 
-    Mission getMissionById(UUID id);
+    MissionDTO getMissionById(UUID id);
 
-    List<Mission> getAllMissions();
+    List<MissionDTO> getAllMissions();
 
-    Mission updateMission(UUID id, Mission mission);
+    MissionDTO updateMission(UUID id, UpdateMissionRequest request);
 
     void deleteMission(UUID id);
 }
