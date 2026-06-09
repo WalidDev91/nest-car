@@ -4,6 +4,7 @@ import com.mvpnest.fleetmanagement.dto.auth.AuthResponse;
 import com.mvpnest.fleetmanagement.dto.auth.LoginRequest;
 import com.mvpnest.fleetmanagement.dto.auth.RegisterRequest;
 import com.mvpnest.fleetmanagement.entity.User;
+import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.security.JwtService;
 import com.mvpnest.fleetmanagement.service.AuthService;
@@ -52,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .role(RoleType.DRIVER)
                 .isValidate(true)
                 .build();
 
