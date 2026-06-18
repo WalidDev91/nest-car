@@ -1,7 +1,11 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
+import com.mvpnest.fleetmanagement.dto.DriverDocumentDTO;
 import com.mvpnest.fleetmanagement.entity.DriverDocument;
+import com.mvpnest.fleetmanagement.entity.User;
+import com.mvpnest.fleetmanagement.mapper.DriverDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.DriverDocumentRepository;
+import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.service.DriverDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,46 +18,78 @@ import java.util.UUID;
 public class DriverDocumentServiceImpl implements DriverDocumentService {
 
     private final DriverDocumentRepository documentRepository;
+    private final UserRepository userRepository;
+    private final DriverDocumentMapper mapper;
 
     @Override
-    public DriverDocument createDocument(DriverDocument document) {
-        return documentRepository.save(document);
+    public DriverDocumentDTO createDocument(DriverDocumentDTO dto) {
+
+        DriverDocument document = mapper.toEntity(dto);
+
+        if (dto.getDriverId() != null) {
+            User driver = userRepository.findById(dto.getDriverId())
+                    .orElseThrow(() -> new RuntimeException("Driver not found"));
+            document.setDriver(driver);
+        }
+
+        return mapper.toDTO(documentRepository.save(document));
     }
 
     @Override
-    public DriverDocument getDocumentById(UUID id) {
-        return documentRepository.findById(id)
+    public DriverDocumentDTO getDocumentById(UUID id) {
+
+        DriverDocument document = documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("DriverDocument not found with id: " + id));
+
+        return mapper.toDTO(document);
     }
 
     @Override
-    public List<DriverDocument> getAllDocuments() {
-        return documentRepository.findAll();
+    public List<DriverDocumentDTO> getAllDocuments() {
+
+        return documentRepository.findAll()
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
     }
 
     @Override
-    public List<DriverDocument> getDocumentsByDriverId(UUID driverId) {
-        return documentRepository.findByDriverId(driverId);
+    public List<DriverDocumentDTO> getDocumentsByDriverId(UUID driverId) {
+
+        return documentRepository.findByDriverId(driverId)
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
     }
 
     @Override
-    public DriverDocument updateDocument(UUID id, DriverDocument document) {
-        DriverDocument existing = getDocumentById(id);
+    public DriverDocumentDTO updateDocument(UUID id, DriverDocumentDTO dto) {
 
-        existing.setTitle(document.getTitle());
-        existing.setType(document.getType());
-        existing.setFileUrl(document.getFileUrl());
-        existing.setStatus(document.getStatus());
-        existing.setUploadedAt(document.getUploadedAt());
-        existing.setValidatedAt(document.getValidatedAt());
-        existing.setDriver(document.getDriver());
+        DriverDocument existing = documentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("DriverDocument not found with id: " + id));
 
-        return documentRepository.save(existing);
+        existing.setTitle(dto.getTitle());
+        existing.setType(dto.getType());
+        existing.setFileUrl(dto.getFileUrl());
+        existing.setStatus(dto.getStatus());
+        existing.setUploadedAt(dto.getUploadedAt());
+        existing.setValidatedAt(dto.getValidatedAt());
+
+        if (dto.getDriverId() != null) {
+            User driver = userRepository.findById(dto.getDriverId())
+                    .orElseThrow(() -> new RuntimeException("Driver not found"));
+            existing.setDriver(driver);
+        }
+
+        return mapper.toDTO(documentRepository.save(existing));
     }
 
     @Override
     public void deleteDocument(UUID id) {
-        DriverDocument document = getDocumentById(id);
+
+        DriverDocument document = documentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("DriverDocument not found with id: " + id));
+
         documentRepository.delete(document);
     }
 }

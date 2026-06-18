@@ -31,4 +31,8 @@ public class DriverDocumentDTO {
     // driver
     private UUID driverId;
     private String driverName;
+
+    // audit
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

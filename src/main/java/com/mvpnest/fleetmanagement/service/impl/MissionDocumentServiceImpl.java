@@ -1,7 +1,11 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
-import com.mvpnest.fleetmanagement.entity.MissionDocument;
+import com.mvpnest.fleetmanagement.dto.MissionDocumentDTO;
+import com.mvpnest.fleetmanagement.entity.Mission;
+import  com.mvpnest.fleetmanagement.entity.MissionDocument;
+import com.mvpnest.fleetmanagement.mapper.MissionDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.MissionDocumentRepository;
+import com.mvpnest.fleetmanagement.repository.MissionRepository;
 import com.mvpnest.fleetmanagement.service.MissionDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,42 +18,66 @@ import java.util.UUID;
 public class MissionDocumentServiceImpl implements MissionDocumentService {
 
     private final MissionDocumentRepository repository;
+    private final MissionRepository missionRepository;
+    private final MissionDocumentMapper mapper;
 
     @Override
-    public MissionDocument createDocument(MissionDocument document) {
-        return repository.save(document);
+    public MissionDocumentDTO createDocument(MissionDocumentDTO dto) {
+
+        Mission mission = missionRepository.findById(dto.getMissionId())
+                .orElseThrow(() -> new RuntimeException("Mission not found"));
+
+        MissionDocument document = MissionDocument.builder()
+                .title(dto.getTitle())
+                .fileUrl(dto.getFileUrl())
+                .mission(mission)
+                .build();
+
+        return mapper.toDTO(repository.save(document));
     }
 
     @Override
-    public MissionDocument getDocumentById(UUID id) {
-        return repository.findById(id)
+    public MissionDocumentDTO getDocumentById(UUID id) {
+        return mapper.toDTO(
+                repository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("MissionDocument not found with id: " + id))
+        );
+    }
+
+    @Override
+    public List<MissionDocumentDTO> getAllDocuments() {
+        return repository.findAll()
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<MissionDocumentDTO> getDocumentsByMissionId(UUID missionId) {
+        return repository.findByMissionId(missionId)
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public MissionDocumentDTO updateDocument(UUID id, MissionDocumentDTO dto) {
+
+        MissionDocument existing = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("MissionDocument not found with id: " + id));
-    }
 
-    @Override
-    public List<MissionDocument> getAllDocuments() {
-        return repository.findAll();
-    }
+        Mission mission = missionRepository.findById(dto.getMissionId())
+                .orElseThrow(() -> new RuntimeException("Mission not found"));
 
-    @Override
-    public List<MissionDocument> getDocumentsByMissionId(UUID missionId) {
-        return repository.findByMissionId(missionId);
-    }
+        existing.setTitle(dto.getTitle());
+        existing.setFileUrl(dto.getFileUrl());
+        existing.setMission(mission);
 
-    @Override
-    public MissionDocument updateDocument(UUID id, MissionDocument document) {
-        MissionDocument existing = getDocumentById(id);
-
-        existing.setTitle(document.getTitle());
-        existing.setFileUrl(document.getFileUrl());
-        existing.setMission(document.getMission());
-
-        return repository.save(existing);
+        return mapper.toDTO(repository.save(existing));
     }
 
     @Override
     public void deleteDocument(UUID id) {
-        MissionDocument document = getDocumentById(id);
-        repository.delete(document);
+        repository.deleteById(id);
     }
 }

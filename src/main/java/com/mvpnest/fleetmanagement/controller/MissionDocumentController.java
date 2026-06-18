@@ -1,6 +1,6 @@
 package com.mvpnest.fleetmanagement.controller;
 
-import com.mvpnest.fleetmanagement.entity.MissionDocument;
+import com.mvpnest.fleetmanagement.dto.MissionDocumentDTO;
 import com.mvpnest.fleetmanagement.service.MissionDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,28 +16,31 @@ public class MissionDocumentController {
     private final MissionDocumentService service;
 
     @PostMapping
-    public MissionDocument create(@RequestBody MissionDocument document) {
-        return service.createDocument(document);
+    public MissionDocumentDTO create(@RequestBody MissionDocumentDTO dto) {
+        return service.createDocument(dto);
     }
 
     @GetMapping("/{id}")
-    public MissionDocument getById(@PathVariable UUID id) {
+    public MissionDocumentDTO getById(@PathVariable UUID id) {
         return service.getDocumentById(id);
     }
 
     @GetMapping
-    public List<MissionDocument> getAll() {
+    public List<MissionDocumentDTO> getAll() {
         return service.getAllDocuments();
     }
 
     @GetMapping("/mission/{missionId}")
-    public List<MissionDocument> getByMission(@PathVariable UUID missionId) {
+    public List<MissionDocumentDTO> getByMission(@PathVariable UUID missionId) {
         return service.getDocumentsByMissionId(missionId);
     }
 
     @PutMapping("/{id}")
-    public MissionDocument update(@PathVariable UUID id, @RequestBody MissionDocument document) {
-        return service.updateDocument(id, document);
+    public MissionDocumentDTO update(
+            @PathVariable UUID id,
+            @RequestBody MissionDocumentDTO dto
+    ) {
+        return service.updateDocument(id, dto);
     }
 
     @DeleteMapping("/{id}")

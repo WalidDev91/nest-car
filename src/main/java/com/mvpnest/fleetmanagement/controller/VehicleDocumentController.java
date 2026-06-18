@@ -1,6 +1,6 @@
 package com.mvpnest.fleetmanagement.controller;
 
-import com.mvpnest.fleetmanagement.entity.VehicleDocument;
+import com.mvpnest.fleetmanagement.dto.VehicleDocumentDTO;
 import com.mvpnest.fleetmanagement.service.VehicleDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,28 +16,31 @@ public class VehicleDocumentController {
     private final VehicleDocumentService service;
 
     @PostMapping
-    public VehicleDocument create(@RequestBody VehicleDocument document) {
-        return service.createDocument(document);
+    public VehicleDocumentDTO create(@RequestBody VehicleDocumentDTO dto) {
+        return service.createDocument(dto);
     }
 
     @GetMapping("/{id}")
-    public VehicleDocument getById(@PathVariable UUID id) {
+    public VehicleDocumentDTO getById(@PathVariable UUID id) {
         return service.getDocumentById(id);
     }
 
     @GetMapping
-    public List<VehicleDocument> getAll() {
+    public List<VehicleDocumentDTO> getAll() {
         return service.getAllDocuments();
     }
 
     @GetMapping("/vehicle/{vehicleId}")
-    public List<VehicleDocument> getByVehicle(@PathVariable UUID vehicleId) {
+    public List<VehicleDocumentDTO> getByVehicle(@PathVariable UUID vehicleId) {
         return service.getDocumentsByVehicleId(vehicleId);
     }
 
     @PutMapping("/{id}")
-    public VehicleDocument update(@PathVariable UUID id, @RequestBody VehicleDocument document) {
-        return service.updateDocument(id, document);
+    public VehicleDocumentDTO update(
+            @PathVariable UUID id,
+            @RequestBody VehicleDocumentDTO dto
+    ) {
+        return service.updateDocument(id, dto);
     }
 
     @DeleteMapping("/{id}")

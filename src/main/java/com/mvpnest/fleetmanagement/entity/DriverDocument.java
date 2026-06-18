@@ -16,7 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode
-public class DriverDocument {
+public class DriverDocument extends BaseEntity {
 
     @Id
     @GeneratedValue

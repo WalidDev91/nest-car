@@ -1,21 +1,21 @@
 package com.mvpnest.fleetmanagement.service;
 
-import com.mvpnest.fleetmanagement.entity.VehicleDocument;
+import com.mvpnest.fleetmanagement.dto.VehicleDocumentDTO;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface VehicleDocumentService {
 
-    VehicleDocument createDocument(VehicleDocument document);
+    VehicleDocumentDTO createDocument(VehicleDocumentDTO dto);
 
-    VehicleDocument getDocumentById(UUID id);
+    VehicleDocumentDTO getDocumentById(UUID id);
 
-    List<VehicleDocument> getAllDocuments();
+    List<VehicleDocumentDTO> getAllDocuments();
 
-    List<VehicleDocument> getDocumentsByVehicleId(UUID vehicleId);
+    List<VehicleDocumentDTO> getDocumentsByVehicleId(UUID vehicleId);
 
-    VehicleDocument updateDocument(UUID id, VehicleDocument document);
+    VehicleDocumentDTO updateDocument(UUID id, VehicleDocumentDTO dto);
 
     void deleteDocument(UUID id);
 }

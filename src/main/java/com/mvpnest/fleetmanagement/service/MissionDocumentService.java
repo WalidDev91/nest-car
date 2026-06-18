@@ -1,21 +1,21 @@
 package com.mvpnest.fleetmanagement.service;
 
-import com.mvpnest.fleetmanagement.entity.MissionDocument;
+import com.mvpnest.fleetmanagement.dto.MissionDocumentDTO;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface MissionDocumentService {
 
-    MissionDocument createDocument(MissionDocument document);
+    MissionDocumentDTO createDocument(MissionDocumentDTO dto);
 
-    MissionDocument getDocumentById(UUID id);
+    MissionDocumentDTO getDocumentById(UUID id);
 
-    List<MissionDocument> getAllDocuments();
+    List<MissionDocumentDTO> getAllDocuments();
 
-    List<MissionDocument> getDocumentsByMissionId(UUID missionId);
+    List<MissionDocumentDTO> getDocumentsByMissionId(UUID missionId);
 
-    MissionDocument updateDocument(UUID id, MissionDocument document);
+    MissionDocumentDTO updateDocument(UUID id, MissionDocumentDTO dto);
 
     void deleteDocument(UUID id);
 }

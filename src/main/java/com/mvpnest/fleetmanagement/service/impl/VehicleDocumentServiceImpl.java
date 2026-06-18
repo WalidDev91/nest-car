@@ -1,7 +1,11 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
+import com.mvpnest.fleetmanagement.dto.VehicleDocumentDTO;
+import com.mvpnest.fleetmanagement.entity.Vehicle;
 import com.mvpnest.fleetmanagement.entity.VehicleDocument;
+import com.mvpnest.fleetmanagement.mapper.VehicleDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.VehicleDocumentRepository;
+import com.mvpnest.fleetmanagement.repository.VehicleRepository;
 import com.mvpnest.fleetmanagement.service.VehicleDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,44 +18,72 @@ import java.util.List;
 public class VehicleDocumentServiceImpl implements VehicleDocumentService {
 
     private final VehicleDocumentRepository repository;
+    private final VehicleRepository vehicleRepository;
+    private final VehicleDocumentMapper mapper;
 
     @Override
-    public VehicleDocument createDocument(VehicleDocument document) {
-        return repository.save(document);
+    public VehicleDocumentDTO createDocument(VehicleDocumentDTO dto) {
+
+        Vehicle vehicle = vehicleRepository.findById(dto.getVehicleId())
+                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+        VehicleDocument document = mapper.toEntity(dto);
+        document.setVehicle(vehicle);
+
+        return mapper.toDTO(repository.save(document));
     }
 
     @Override
-    public VehicleDocument getDocumentById(UUID id) {
-        return repository.findById(id)
+    public VehicleDocumentDTO getDocumentById(UUID id) {
+
+        VehicleDocument document = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("VehicleDocument not found with id: " + id));
+
+        return mapper.toDTO(document);
     }
 
     @Override
-    public List<VehicleDocument> getAllDocuments() {
-        return repository.findAll();
+    public List<VehicleDocumentDTO> getAllDocuments() {
+
+        return repository.findAll()
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
     }
 
     @Override
-    public List<VehicleDocument> getDocumentsByVehicleId(UUID vehicleId) {
-        return repository.findByVehicleId(vehicleId);
+    public List<VehicleDocumentDTO> getDocumentsByVehicleId(UUID vehicleId) {
+
+        return repository.findByVehicleId(vehicleId)
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
     }
 
     @Override
-    public VehicleDocument updateDocument(UUID id, VehicleDocument document) {
-        VehicleDocument existing = getDocumentById(id);
+    public VehicleDocumentDTO updateDocument(UUID id, VehicleDocumentDTO dto) {
 
-        existing.setTitle(document.getTitle());
-        existing.setType(document.getType());
-        existing.setFileUrl(document.getFileUrl());
-        existing.setYear(document.getYear());
-        existing.setVehicle(document.getVehicle());
+        VehicleDocument existing = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("VehicleDocument not found with id: " + id));
 
-        return repository.save(existing);
+        Vehicle vehicle = vehicleRepository.findById(dto.getVehicleId())
+                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+        existing.setTitle(dto.getTitle());
+        existing.setType(dto.getType());
+        existing.setFileUrl(dto.getFileUrl());
+        existing.setYear(dto.getYear());
+        existing.setVehicle(vehicle);
+
+        return mapper.toDTO(repository.save(existing));
     }
 
     @Override
     public void deleteDocument(UUID id) {
-        VehicleDocument document = getDocumentById(id);
+
+        VehicleDocument document = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("VehicleDocument not found with id: " + id));
+
         repository.delete(document);
     }
 }
