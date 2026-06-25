@@ -1,9 +1,11 @@
 package com.mvpnest.fleetmanagement.controller;
 
 import com.mvpnest.fleetmanagement.dto.DriverDocumentDTO;
+import com.mvpnest.fleetmanagement.dto.DriverDocumentUploadRequest;
 import com.mvpnest.fleetmanagement.service.DriverDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -46,5 +48,18 @@ public class DriverDocumentController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
         documentService.deleteDocument(id);
+    }
+
+    @PostMapping("/upload")
+    public DriverDocumentDTO upload(
+            @RequestPart("file") MultipartFile file,
+            @ModelAttribute DriverDocumentUploadRequest request
+    ) {
+        return documentService.uploadDocument(
+                file,
+                request.getTitle(),
+                request.getType(),
+                request.getDriverId()
+        );
     }
 }

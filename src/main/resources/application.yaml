@@ -29,3 +29,8 @@ logging:
 
 server:
   port: 8080
+
+app:
+  upload:
+    dir: uploads
+  base-url: http://localhost:8080

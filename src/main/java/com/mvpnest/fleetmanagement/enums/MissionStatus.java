@@ -2,7 +2,7 @@ package com.mvpnest.fleetmanagement.enums;
 
 public enum MissionStatus {
     PLANNED,
-    IN_PROGRESS,
+    ONGOING,
     COMPLETED,
     CANCELLED
 }
