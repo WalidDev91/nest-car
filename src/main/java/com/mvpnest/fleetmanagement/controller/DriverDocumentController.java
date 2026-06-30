@@ -4,6 +4,8 @@ import com.mvpnest.fleetmanagement.dto.DriverDocumentDTO;
 import com.mvpnest.fleetmanagement.dto.DriverDocumentUploadRequest;
 import com.mvpnest.fleetmanagement.service.DriverDocumentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -61,5 +63,10 @@ public class DriverDocumentController {
                 request.getType(),
                 request.getDriverId()
         );
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<Resource> download(@PathVariable UUID id) {
+        return documentService.downloadDocument(id);
     }
 }

@@ -13,6 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -114,42 +119,70 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
             DriverDocumentType type,
             UUID driverId
     ) {
-
         try {
-            // 1. validate file
             if (file.isEmpty()) {
                 throw new RuntimeException("File is empty");
             }
 
-            // 2. create directory safely
+            // create folder
             Path uploadPath = Paths.get(uploadDir, "driver-documents");
             Files.createDirectories(uploadPath);
 
-            // 3. unique filename
+            // safe filename
             String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+
             Path filePath = uploadPath.resolve(filename);
 
+            // save file
             Files.copy(file.getInputStream(), filePath);
 
-            // 4. find driver
             User driver = userRepository.findById(driverId)
                     .orElseThrow(() -> new RuntimeException("Driver not found"));
 
-            // 5. build entity
+            // IMPORTANT: store ONLY filename
             DriverDocument document = DriverDocument.builder()
                     .title(title)
                     .type(type)
                     .status(DriverDocumentStatus.PENDING)
-                    .fileUrl(baseUrl + "/uploads/driver-documents/" + filename)
+                    .fileUrl(filename)   // ✅ ONLY THIS
                     .uploadedAt(LocalDateTime.now())
                     .driver(driver)
                     .build();
 
-            // 6. save
             return mapper.toDTO(documentRepository.save(document));
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload file: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public ResponseEntity<Resource> downloadDocument(UUID id) {
+
+        try {
+            DriverDocument doc = documentRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Document not found"));
+
+            String filename = doc.getFileUrl(); // ONLY filename
+
+            Path filePath = Paths.get(uploadDir, "driver-documents")
+                    .resolve(filename)
+                    .normalize();
+
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new RuntimeException("File not found or not readable: " + filename);
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(resource);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Download failed: " + e.getMessage());
         }
     }
 }
