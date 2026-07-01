@@ -2,6 +2,7 @@ package com.mvpnest.fleetmanagement.controller;
 
 import com.mvpnest.fleetmanagement.dto.DriverDocumentDTO;
 import com.mvpnest.fleetmanagement.dto.DriverDocumentUploadRequest;
+import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
 import com.mvpnest.fleetmanagement.service.DriverDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -17,26 +18,26 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DriverDocumentController {
 
-    private final DriverDocumentService documentService;
+    private final DriverDocumentService driverDocumentService;
 
     @PostMapping
     public DriverDocumentDTO create(@RequestBody DriverDocumentDTO dto) {
-        return documentService.createDocument(dto);
+        return driverDocumentService.createDocument(dto);
     }
 
     @GetMapping("/{id}")
     public DriverDocumentDTO getById(@PathVariable UUID id) {
-        return documentService.getDocumentById(id);
+        return driverDocumentService.getDocumentById(id);
     }
 
     @GetMapping
     public List<DriverDocumentDTO> getAll() {
-        return documentService.getAllDocuments();
+        return driverDocumentService.getAllDocuments();
     }
 
     @GetMapping("/driver/{driverId}")
     public List<DriverDocumentDTO> getByDriver(@PathVariable UUID driverId) {
-        return documentService.getDocumentsByDriverId(driverId);
+        return driverDocumentService.getDocumentsByDriverId(driverId);
     }
 
     @PutMapping("/{id}")
@@ -44,12 +45,12 @@ public class DriverDocumentController {
             @PathVariable UUID id,
             @RequestBody DriverDocumentDTO dto
     ) {
-        return documentService.updateDocument(id, dto);
+        return driverDocumentService.updateDocument(id, dto);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
-        documentService.deleteDocument(id);
+        driverDocumentService.deleteDocument(id);
     }
 
     @PostMapping("/upload")
@@ -57,7 +58,7 @@ public class DriverDocumentController {
             @RequestPart("file") MultipartFile file,
             @ModelAttribute DriverDocumentUploadRequest request
     ) {
-        return documentService.uploadDocument(
+        return driverDocumentService.uploadDocument(
                 file,
                 request.getTitle(),
                 request.getType(),
@@ -67,6 +68,14 @@ public class DriverDocumentController {
 
     @GetMapping("/{id}/download")
     public ResponseEntity<Resource> download(@PathVariable UUID id) {
-        return documentService.downloadDocument(id);
+        return driverDocumentService.downloadDocument(id);
+    }
+
+    @PatchMapping("/{id}/status")
+    public DriverDocumentDTO updateStatus(
+            @PathVariable UUID id,
+            @RequestParam DriverDocumentStatus status
+    ) {
+        return driverDocumentService.updateStatus(id, status);
     }
 }

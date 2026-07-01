@@ -1,6 +1,7 @@
 package com.mvpnest.fleetmanagement.service;
 
 import com.mvpnest.fleetmanagement.dto.DriverDocumentDTO;
+import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -26,5 +27,7 @@ public interface DriverDocumentService {
     DriverDocumentDTO uploadDocument(MultipartFile file, String title, DriverDocumentType type, UUID driverId);
 
     ResponseEntity<Resource> downloadDocument(UUID id);
+
+    DriverDocumentDTO updateStatus(UUID id, DriverDocumentStatus status);
 
 }

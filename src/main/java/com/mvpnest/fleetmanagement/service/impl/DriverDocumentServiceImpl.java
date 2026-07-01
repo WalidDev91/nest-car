@@ -185,4 +185,16 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
             throw new RuntimeException("Download failed: " + e.getMessage());
         }
     }
+
+    @Override
+    public DriverDocumentDTO updateStatus(UUID id, DriverDocumentStatus status) {
+
+        DriverDocument document = documentRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("DriverDocument not found with id: " + id));
+
+        document.setStatus(status);
+
+        return mapper.toDTO(documentRepository.save(document));
+    }
 }
