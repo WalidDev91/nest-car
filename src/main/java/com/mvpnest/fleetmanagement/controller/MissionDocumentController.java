@@ -1,9 +1,13 @@
 package com.mvpnest.fleetmanagement.controller;
 
 import com.mvpnest.fleetmanagement.dto.MissionDocumentDTO;
+import com.mvpnest.fleetmanagement.dto.MissionDocumentUploadRequest;
 import com.mvpnest.fleetmanagement.service.MissionDocumentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,26 +17,26 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MissionDocumentController {
 
-    private final MissionDocumentService service;
+    private final MissionDocumentService missionDocumentService;
 
     @PostMapping
     public MissionDocumentDTO create(@RequestBody MissionDocumentDTO dto) {
-        return service.createDocument(dto);
+        return missionDocumentService.createDocument(dto);
     }
 
     @GetMapping("/{id}")
     public MissionDocumentDTO getById(@PathVariable UUID id) {
-        return service.getDocumentById(id);
+        return missionDocumentService.getDocumentById(id);
     }
 
     @GetMapping
     public List<MissionDocumentDTO> getAll() {
-        return service.getAllDocuments();
+        return missionDocumentService.getAllDocuments();
     }
 
     @GetMapping("/mission/{missionId}")
     public List<MissionDocumentDTO> getByMission(@PathVariable UUID missionId) {
-        return service.getDocumentsByMissionId(missionId);
+        return missionDocumentService.getDocumentsByMissionId(missionId);
     }
 
     @PutMapping("/{id}")
@@ -40,11 +44,28 @@ public class MissionDocumentController {
             @PathVariable UUID id,
             @RequestBody MissionDocumentDTO dto
     ) {
-        return service.updateDocument(id, dto);
+        return missionDocumentService.updateDocument(id, dto);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
-        service.deleteDocument(id);
+        missionDocumentService.deleteDocument(id);
+    }
+
+    @PostMapping("/upload")
+    public MissionDocumentDTO upload(
+            @RequestPart("file") MultipartFile file,
+            @ModelAttribute MissionDocumentUploadRequest request
+    ) {
+        return missionDocumentService.uploadDocument(
+                file,
+                request.getTitle(),
+                request.getMissionId()
+        );
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<Resource> download(@PathVariable UUID id) {
+        return missionDocumentService.downloadDocument(id);
     }
 }

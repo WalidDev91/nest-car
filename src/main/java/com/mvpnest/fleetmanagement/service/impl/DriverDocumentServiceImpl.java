@@ -33,17 +33,14 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
 
     private final DriverDocumentRepository documentRepository;
     private final UserRepository userRepository;
-    private final DriverDocumentMapper mapper;
+    private final DriverDocumentMapper driverDocumentMapper;
     @Value("${app.upload.dir}")
     private String uploadDir;
-
-    @Value("${app.base-url}")
-    private String baseUrl;
 
     @Override
     public DriverDocumentDTO createDocument(DriverDocumentDTO dto) {
 
-        DriverDocument document = mapper.toEntity(dto);
+        DriverDocument document = driverDocumentMapper.toEntity(dto);
 
         if (dto.getDriverId() != null) {
             User driver = userRepository.findById(dto.getDriverId())
@@ -51,7 +48,7 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
             document.setDriver(driver);
         }
 
-        return mapper.toDTO(documentRepository.save(document));
+        return driverDocumentMapper.toDTO(documentRepository.save(document));
     }
 
     @Override
@@ -60,7 +57,7 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
         DriverDocument document = documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("DriverDocument not found with id: " + id));
 
-        return mapper.toDTO(document);
+        return driverDocumentMapper.toDTO(document);
     }
 
     @Override
@@ -68,7 +65,7 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
 
         return documentRepository.findAll()
                 .stream()
-                .map(mapper::toDTO)
+                .map(driverDocumentMapper::toDTO)
                 .toList();
     }
 
@@ -77,7 +74,7 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
 
         return documentRepository.findByDriverId(driverId)
                 .stream()
-                .map(mapper::toDTO)
+                .map(driverDocumentMapper::toDTO)
                 .toList();
     }
 
@@ -100,7 +97,7 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
             existing.setDriver(driver);
         }
 
-        return mapper.toDTO(documentRepository.save(existing));
+        return driverDocumentMapper.toDTO(documentRepository.save(existing));
     }
 
     @Override
@@ -149,7 +146,7 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
                     .driver(driver)
                     .build();
 
-            return mapper.toDTO(documentRepository.save(document));
+            return driverDocumentMapper.toDTO(documentRepository.save(document));
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload file: " + e.getMessage());
@@ -195,6 +192,6 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
 
         document.setStatus(status);
 
-        return mapper.toDTO(documentRepository.save(document));
+        return driverDocumentMapper.toDTO(documentRepository.save(document));
     }
 }
