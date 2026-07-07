@@ -18,7 +18,7 @@ public interface DriverDocumentService {
 
     List<DriverDocumentDTO> getAllDocuments();
 
-    List<DriverDocumentDTO> getDocumentsByDriverId(UUID driverId);
+    List<DriverDocumentDTO> getMyDocuments(UUID userId);
 
     DriverDocumentDTO updateDocument(UUID id, DriverDocumentDTO dto);
 

@@ -70,9 +70,8 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
     }
 
     @Override
-    public List<DriverDocumentDTO> getDocumentsByDriverId(UUID driverId) {
-
-        return documentRepository.findByDriverId(driverId)
+    public List<DriverDocumentDTO> getMyDocuments(UUID userId) {
+        return documentRepository.findByDriverId(userId)
                 .stream()
                 .map(driverDocumentMapper::toDTO)
                 .toList();
