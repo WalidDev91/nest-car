@@ -8,9 +8,9 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface MissionMapper {
 
-    @Mapping(source = "driver.id", target = "driverId")
-    @Mapping(expression = "java(mission.getDriver().getFirstName() + \" \" + mission.getDriver().getLastName())", target = "driverName")
-    @Mapping(source = "vehicle.id", target = "vehicleId")
-    @Mapping(source = "vehicle.plateNumber", target = "vehiclePlateNumber")
+    @Mapping(target = "driverId", expression = "java(mission.getDriver() != null ? mission.getDriver().getId() : null)")
+    @Mapping(target = "driverName", expression = "java(mission.getDriver() != null ? mission.getDriver().getFirstName() + \" \" + mission.getDriver().getLastName() : null)")
+    @Mapping(target = "vehicleId", expression = "java(mission.getVehicle() != null ? mission.getVehicle().getId() : null)")
+    @Mapping(target = "vehiclePlateNumber", expression = "java(mission.getVehicle() != null ? mission.getVehicle().getPlateNumber() : null)")
     MissionDTO toDTO(Mission mission);
 }

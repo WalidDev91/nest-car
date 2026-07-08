@@ -5,6 +5,7 @@ import com.mvpnest.fleetmanagement.dto.mission.MissionDTO;
 import com.mvpnest.fleetmanagement.dto.mission.UpdateMissionRequest;
 import com.mvpnest.fleetmanagement.entity.Mission;
 import com.mvpnest.fleetmanagement.entity.User;
+import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.entity.Vehicle;
 import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import com.mvpnest.fleetmanagement.mapper.MissionMapper;
@@ -30,11 +31,26 @@ public class MissionServiceImpl implements MissionService {
     @Override
     public MissionDTO createMission(CreateMissionRequest request) {
 
-        User driver = userRepository.findById(request.getDriverId())
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
+        User driver = null;
 
-        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+        if (request.getDriverId() != null) {
+
+            driver = userRepository.findById(request.getDriverId())
+                    .orElseThrow(() -> new RuntimeException("Driver not found"));
+
+            if (driver.getRole() != RoleType.DRIVER) {
+                throw new RuntimeException("Selected user is not a driver");
+            }
+        }
+
+        Vehicle vehicle = null;
+
+        if (request.getVehicleId() != null) {
+
+            vehicle = vehicleRepository.findById(request.getVehicleId())
+                    .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+        }
+
 
         Mission mission = Mission.builder()
                 .title(request.getTitle())
@@ -45,6 +61,7 @@ public class MissionServiceImpl implements MissionService {
                 .driver(driver)
                 .vehicle(vehicle)
                 .build();
+
 
         return missionMapper.toDTO(
                 missionRepository.save(mission)
@@ -75,19 +92,37 @@ public class MissionServiceImpl implements MissionService {
         Mission mission = missionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Mission not found"));
 
-        User driver = userRepository.findById(request.getDriverId())
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
 
-        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+        if (request.getDriverId() != null) {
+
+            User driver = userRepository.findById(request.getDriverId())
+                    .orElseThrow(() -> new RuntimeException("Driver not found"));
+
+            mission.setDriver(driver);
+
+        } else {
+            mission.setDriver(null);
+        }
+
+
+        if (request.getVehicleId() != null) {
+
+            Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
+                    .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+            mission.setVehicle(vehicle);
+
+        } else {
+            mission.setVehicle(null);
+        }
+
 
         mission.setTitle(request.getTitle());
         mission.setDescription(request.getDescription());
         mission.setStartDate(request.getStartDate());
         mission.setEndDate(request.getEndDate());
         mission.setStatus(request.getStatus());
-        mission.setDriver(driver);
-        mission.setVehicle(vehicle);
+
 
         return missionMapper.toDTO(
                 missionRepository.save(mission)

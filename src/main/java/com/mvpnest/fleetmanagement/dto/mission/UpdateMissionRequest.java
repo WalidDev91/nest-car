@@ -26,4 +26,5 @@ public class UpdateMissionRequest {
     private UUID driverId;
 
     private UUID vehicleId;
+
 }

@@ -22,16 +22,29 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .cors(cors -> {}) // keep this
+                .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+
+                        // Authentication
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/users/**").permitAll()
-                        .requestMatchers("/api/vehicles/**").permitAll()
-                        .requestMatchers("/api/driver-documents/**").permitAll()
+
+                        // Protected resources
+                        .requestMatchers("/api/users/**").authenticated()
+                        .requestMatchers("/api/vehicles/**").authenticated()
+
+                        // Missions
+                        .requestMatchers("/api/missions/**").permitAll()
+
+                        // Documents
+                        .requestMatchers("/api/driver-documents/**").authenticated()
+                        .requestMatchers("/api/vehicle-documents/**").authenticated()
+                        .requestMatchers("/api/mission-documents/**").authenticated()
+
+                        // Everything else
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

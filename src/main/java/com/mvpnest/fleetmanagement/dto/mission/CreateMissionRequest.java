@@ -23,4 +23,5 @@ public class CreateMissionRequest {
     private UUID driverId;
 
     private UUID vehicleId;
+
 }
