@@ -37,7 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/vehicles/**").authenticated()
 
                         // Missions
-                        .requestMatchers("/api/missions/**").permitAll()
+                        .requestMatchers("/api/missions/**").authenticated()
 
                         // Documents
                         .requestMatchers("/api/driver-documents/**").authenticated()

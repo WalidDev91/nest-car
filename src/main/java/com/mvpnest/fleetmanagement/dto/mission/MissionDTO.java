@@ -1,5 +1,6 @@
 package com.mvpnest.fleetmanagement.dto.mission;
 
+import com.mvpnest.fleetmanagement.dto.MissionVehicleInspectionDTO;
 import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import lombok.*;
 
@@ -35,4 +36,6 @@ public class MissionDTO {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private MissionVehicleInspectionDTO inspection;
 }
