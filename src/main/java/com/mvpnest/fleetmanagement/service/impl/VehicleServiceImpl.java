@@ -10,6 +10,7 @@ import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.repository.VehicleRepository;
 import com.mvpnest.fleetmanagement.service.VehicleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,8 +27,10 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleDTO createVehicle(VehicleCreateRequest request) {
 
-        User admin = userRepository.findById(request.getAdminId())
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        User admin = (User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
         Vehicle vehicle = Vehicle.builder()
                 .plateNumber(request.getPlateNumber())
@@ -63,8 +66,10 @@ public class VehicleServiceImpl implements VehicleService {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-        User admin = userRepository.findById(request.getAdminId())
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        User admin = (User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
         vehicle.setPlateNumber(request.getPlateNumber());
         vehicle.setBrand(request.getBrand());
