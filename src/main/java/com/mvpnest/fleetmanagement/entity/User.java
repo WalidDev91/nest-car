@@ -5,6 +5,7 @@ import com.mvpnest.fleetmanagement.enums.RoleType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -68,4 +69,8 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "driver")
     @JsonIgnore
     private List<DriverDocument> driverDocuments;
+
+    private String resetToken;
+
+    private LocalDateTime resetTokenExpiration;
 }

@@ -21,11 +21,27 @@ spring:
     init:
       mode: never
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
 logging:
   level:
-    org:
-      springframework:
-        security: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.mail: DEBUG
+    jakarta.mail: DEBUG
+
 
 server:
   port: 8080
@@ -33,4 +49,5 @@ server:
 app:
   upload:
     dir: uploads
+
   base-url: http://localhost:8080
