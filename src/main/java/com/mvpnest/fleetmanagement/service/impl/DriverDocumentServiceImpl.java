@@ -191,6 +191,8 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
 
         document.setStatus(status);
 
-        return driverDocumentMapper.toDTO(documentRepository.save(document));
+        return driverDocumentMapper.toDTO(
+                documentRepository.save(document)
+        );
     }
 }
