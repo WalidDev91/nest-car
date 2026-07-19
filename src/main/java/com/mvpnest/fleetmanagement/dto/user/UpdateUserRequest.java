@@ -22,7 +22,5 @@ public class UpdateUserRequest {
 
     private RoleType role;
 
-    private boolean isValidate;
-
     private UUID adminId;
 }

@@ -20,5 +20,12 @@ public interface UserService {
 
     UserDTO updateUser(UUID id, UpdateUserRequest request);
 
+    void changeRole(UUID id, RoleType role);
+
+    void activateUser(UUID id);
+
+    void deactivateUser(UUID id);
+
     void deleteUser(UUID id);
+
 }

@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
     @Mapping(source = "admin.id", target = "adminId")
-    @Mapping(source = "admin.firstName", target = "adminName")
+    @Mapping(expression = "java(user.getAdmin() != null ? user.getAdmin().getFirstName() + \" \" + user.getAdmin().getLastName() : null)", target = "adminName")
     UserDTO toDTO(User user);
+
 }
