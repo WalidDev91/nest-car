@@ -10,6 +10,7 @@ public interface UserMapper {
 
     @Mapping(source = "admin.id", target = "adminId")
     @Mapping(expression = "java(user.getAdmin() != null ? user.getAdmin().getFirstName() + \" \" + user.getAdmin().getLastName() : null)", target = "adminName")
+    @Mapping(source = "imageUrl", target = "imageUrl")
     UserDTO toDTO(User user);
 
 }

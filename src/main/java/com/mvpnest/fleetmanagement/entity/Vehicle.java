@@ -33,6 +33,9 @@ public class Vehicle extends BaseEntity {
     @Column(nullable = false)
     private Integer year;
 
+    @Column
+    private String imageUrl;
+
     // ================== ASSOCIATIONS ==================
 
     // 1/ Vehicle (*) → User (1) "admin"
@@ -53,4 +56,5 @@ public class Vehicle extends BaseEntity {
     @JsonIgnore
     private List<VehicleDocument> vehicleDocuments;
     // fix: one vehicle has multiple documents
+
 }

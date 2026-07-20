@@ -44,6 +44,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private boolean isValidate = true;
 
+    @Column
+    private String imageUrl;
+
     // ================== ASSOCIATIONS ==================
 
     // 1/ User → User (Admin manages users)

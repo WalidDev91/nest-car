@@ -15,4 +15,6 @@ public interface MissionRepository extends JpaRepository<Mission, UUID> {
 
     List<Mission> findByStatus(MissionStatus status);
 
+    List<Mission> findByVehicleId(UUID vehicleId);
+
 }

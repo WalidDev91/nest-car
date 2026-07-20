@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -294,6 +295,26 @@ public class UserServiceImpl implements UserService {
 
 
         userRepository.delete(user);
+
+    }
+
+    @Override
+    public UserDTO uploadImage(UUID id, MultipartFile file) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public UserDTO deleteImage(UUID id) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public List<UserDTO> getUsersByAdmin(UUID adminId) {
+
+        return userRepository.findByAdminId(adminId)
+                .stream()
+                .map(userMapper::toDTO)
+                .toList();
 
     }
 

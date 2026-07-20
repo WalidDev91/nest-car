@@ -137,4 +137,14 @@ public class MissionServiceImpl implements MissionService {
 
         missionRepository.delete(mission);
     }
+
+    @Override
+    public List<MissionDTO> getMissionsByVehicleId(UUID vehicleId) {
+
+        return missionRepository.findByVehicleId(vehicleId)
+                .stream()
+                .map(missionMapper::toDTO)
+                .toList();
+
+    }
 }

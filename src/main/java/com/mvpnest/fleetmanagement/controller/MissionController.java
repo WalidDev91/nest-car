@@ -50,4 +50,9 @@ public class MissionController {
     ) {
         missionService.deleteMission(id);
     }
+
+    @GetMapping("/vehicle/{vehicleId}")
+    public List<MissionDTO> getByVehicle(@PathVariable UUID vehicleId) {
+        return missionService.getMissionsByVehicleId(vehicleId);
+    }
 }

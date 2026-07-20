@@ -12,6 +12,7 @@ import com.mvpnest.fleetmanagement.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -53,6 +54,15 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
+    public List<VehicleDTO> getVehiclesByAdmin(UUID adminId) {
+
+        return vehicleRepository.findByAdminId(adminId)
+                .stream()
+                .map(vehicleMapper::toDTO)
+                .toList();
+    }
+
+    @Override
     public List<VehicleDTO> getAllVehicles() {
         return vehicleRepository.findAll()
                 .stream()
@@ -87,5 +97,15 @@ public class VehicleServiceImpl implements VehicleService {
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
         vehicleRepository.delete(vehicle);
+    }
+
+    @Override
+    public VehicleDTO uploadImage(UUID id, MultipartFile file) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public VehicleDTO deleteImage(UUID id) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

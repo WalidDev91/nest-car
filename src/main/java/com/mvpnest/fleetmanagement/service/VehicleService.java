@@ -3,6 +3,7 @@ package com.mvpnest.fleetmanagement.service;
 import com.mvpnest.fleetmanagement.dto.vehicle.VehicleCreateRequest;
 import com.mvpnest.fleetmanagement.dto.vehicle.VehicleDTO;
 import com.mvpnest.fleetmanagement.dto.vehicle.VehicleUpdateRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,4 +19,10 @@ public interface VehicleService {
     VehicleDTO updateVehicle(UUID id, VehicleUpdateRequest request);
 
     void deleteVehicle(UUID id);
+
+    List<VehicleDTO> getVehiclesByAdmin(UUID adminId);
+
+    VehicleDTO uploadImage(UUID id, MultipartFile file);
+
+    VehicleDTO deleteImage(UUID id);
 }

@@ -34,4 +34,6 @@ public class UserDTO {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private String imageUrl;
 }

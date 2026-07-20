@@ -4,6 +4,7 @@ import com.mvpnest.fleetmanagement.entity.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,4 +14,6 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
     Optional<Vehicle> findById(UUID id);
 
     Optional<Vehicle> findByPlateNumber(String plateNumber);
+
+    List<Vehicle> findByAdminId(UUID adminId);
 }

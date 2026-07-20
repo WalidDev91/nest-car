@@ -10,5 +10,6 @@ public interface VehicleMapper {
 
     @Mapping(source = "admin.id", target = "adminId")
     @Mapping(source = "admin.firstName", target = "adminName")
+    @Mapping(source = "imageUrl", target = "imageUrl")
     VehicleDTO toDTO(Vehicle vehicle);
 }

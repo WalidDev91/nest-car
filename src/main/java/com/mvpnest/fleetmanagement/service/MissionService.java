@@ -18,4 +18,6 @@ public interface MissionService {
     MissionDTO updateMission(UUID id, UpdateMissionRequest request);
 
     void deleteMission(UUID id);
+
+    List<MissionDTO> getMissionsByVehicleId(UUID vehicleId);
 }
