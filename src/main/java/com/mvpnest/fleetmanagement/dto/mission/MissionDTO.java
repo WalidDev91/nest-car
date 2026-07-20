@@ -26,16 +26,22 @@ public class MissionDTO {
 
     private MissionStatus status;
 
+
     // driver
     private UUID driverId;
     private String driverName;
+
 
     // vehicle
     private UUID vehicleId;
     private String vehiclePlateNumber;
 
+
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 
-    private MissionVehicleInspectionDTO inspection;
+
+    // inspection
+    private MissionVehicleInspectionDTO vehicleInspection;
 }

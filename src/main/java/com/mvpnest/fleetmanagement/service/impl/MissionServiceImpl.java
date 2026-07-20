@@ -98,6 +98,10 @@ public class MissionServiceImpl implements MissionService {
             User driver = userRepository.findById(request.getDriverId())
                     .orElseThrow(() -> new RuntimeException("Driver not found"));
 
+            if (driver.getRole() != RoleType.DRIVER) {
+                throw new RuntimeException("Selected user is not a driver");
+            }
+
             mission.setDriver(driver);
 
         } else {
@@ -121,7 +125,9 @@ public class MissionServiceImpl implements MissionService {
         mission.setDescription(request.getDescription());
         mission.setStartDate(request.getStartDate());
         mission.setEndDate(request.getEndDate());
-        mission.setStatus(request.getStatus());
+        if(request.getStatus() != null){
+            mission.setStatus(request.getStatus());
+        }
 
 
         return missionMapper.toDTO(
@@ -146,5 +152,14 @@ public class MissionServiceImpl implements MissionService {
                 .map(missionMapper::toDTO)
                 .toList();
 
+    }
+
+    @Override
+    public List<MissionDTO> getMissionsByStatus(MissionStatus status){
+
+        return missionRepository.findByStatus(status)
+                .stream()
+                .map(missionMapper::toDTO)
+                .toList();
     }
 }

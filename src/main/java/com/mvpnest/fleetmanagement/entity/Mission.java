@@ -1,5 +1,6 @@
 package com.mvpnest.fleetmanagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -54,6 +55,7 @@ public class Mission extends BaseEntity {
 
     // 3️⃣ Mission (1) → MissionDocument (*)
     @OneToMany(mappedBy = "mission")
+    @JsonIgnore
     private List<MissionDocument> missionDocuments;
     // fix: one mission can have multiple mission documents
 

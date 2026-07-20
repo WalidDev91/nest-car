@@ -3,6 +3,7 @@ package com.mvpnest.fleetmanagement.controller;
 import com.mvpnest.fleetmanagement.dto.mission.CreateMissionRequest;
 import com.mvpnest.fleetmanagement.dto.mission.MissionDTO;
 import com.mvpnest.fleetmanagement.dto.mission.UpdateMissionRequest;
+import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import com.mvpnest.fleetmanagement.service.MissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -54,5 +55,10 @@ public class MissionController {
     @GetMapping("/vehicle/{vehicleId}")
     public List<MissionDTO> getByVehicle(@PathVariable UUID vehicleId) {
         return missionService.getMissionsByVehicleId(vehicleId);
+    }
+
+    @GetMapping("/status/{status}")
+    public List<MissionDTO> getByStatus(@PathVariable MissionStatus status){
+        return missionService.getMissionsByStatus(status);
     }
 }

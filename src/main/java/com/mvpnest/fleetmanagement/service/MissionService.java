@@ -3,6 +3,7 @@ package com.mvpnest.fleetmanagement.service;
 import com.mvpnest.fleetmanagement.dto.mission.CreateMissionRequest;
 import com.mvpnest.fleetmanagement.dto.mission.MissionDTO;
 import com.mvpnest.fleetmanagement.dto.mission.UpdateMissionRequest;
+import com.mvpnest.fleetmanagement.enums.MissionStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,4 +21,6 @@ public interface MissionService {
     void deleteMission(UUID id);
 
     List<MissionDTO> getMissionsByVehicleId(UUID vehicleId);
+
+    List<MissionDTO> getMissionsByStatus(MissionStatus status);
 }
