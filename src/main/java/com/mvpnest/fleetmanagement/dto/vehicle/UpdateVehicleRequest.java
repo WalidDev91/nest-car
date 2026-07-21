@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class VehicleCreateRequest {
+public class UpdateVehicleRequest {
 
     private String plateNumber;
 
@@ -17,6 +17,5 @@ public class VehicleCreateRequest {
 
     private Integer year;
 
-    // admin who creates/manages vehicle
     private java.util.UUID adminId;
 }

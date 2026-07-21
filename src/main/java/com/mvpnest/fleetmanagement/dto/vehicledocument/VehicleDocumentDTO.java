@@ -1,5 +1,6 @@
-package com.mvpnest.fleetmanagement.dto;
+package com.mvpnest.fleetmanagement.dto.vehicledocument;
 
+import com.mvpnest.fleetmanagement.enums.VehicleType;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -10,17 +11,21 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MissionDocumentDTO {
+public class VehicleDocumentDTO {
 
     private UUID id;
 
     private String title;
 
+    private VehicleType type;
+
     private String fileUrl;
 
-    // mission
-    private UUID missionId;
-    private String missionTitle;
+    private Integer year;
+
+    // vehicle
+    private UUID vehicleId;
+    private String vehiclePlateNumber;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

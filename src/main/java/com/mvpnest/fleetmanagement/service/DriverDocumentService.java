@@ -1,6 +1,6 @@
 package com.mvpnest.fleetmanagement.service;
 
-import com.mvpnest.fleetmanagement.dto.DriverDocumentDTO;
+import com.mvpnest.fleetmanagement.dto.driverdocument.DriverDocumentDTO;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
 import org.springframework.core.io.Resource;

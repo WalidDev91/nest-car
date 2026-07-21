@@ -1,8 +1,8 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
-import com.mvpnest.fleetmanagement.dto.vehicle.VehicleCreateRequest;
+import com.mvpnest.fleetmanagement.dto.vehicle.CreateVehicleRequest;
 import com.mvpnest.fleetmanagement.dto.vehicle.VehicleDTO;
-import com.mvpnest.fleetmanagement.dto.vehicle.VehicleUpdateRequest;
+import com.mvpnest.fleetmanagement.dto.vehicle.UpdateVehicleRequest;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.entity.Vehicle;
 import com.mvpnest.fleetmanagement.mapper.VehicleMapper;
@@ -26,7 +26,7 @@ public class VehicleServiceImpl implements VehicleService {
     private final VehicleMapper vehicleMapper;
 
     @Override
-    public VehicleDTO createVehicle(VehicleCreateRequest request) {
+    public VehicleDTO createVehicle(CreateVehicleRequest request) {
 
         User admin = (User) SecurityContextHolder
                 .getContext()
@@ -71,7 +71,7 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
-    public VehicleDTO updateVehicle(UUID id, VehicleUpdateRequest request) {
+    public VehicleDTO updateVehicle(UUID id, UpdateVehicleRequest request) {
 
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));

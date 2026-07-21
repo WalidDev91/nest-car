@@ -1,15 +1,22 @@
-package com.mvpnest.fleetmanagement.dto;
+package com.mvpnest.fleetmanagement.dto.vehicledocument;
 
 import com.mvpnest.fleetmanagement.enums.VehicleType;
-import lombok.Data;
+import lombok.*;
 
 import java.util.UUID;
 
-@Data
-public class VehicleDocumentUploadRequest {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UploadVehicleDocumentRequest {
 
     private String title;
+
     private VehicleType type;
+
     private Integer year;
+
     private UUID vehicleId;
 }

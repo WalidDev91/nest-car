@@ -1,6 +1,6 @@
 package com.mvpnest.fleetmanagement.mapper;
 
-import com.mvpnest.fleetmanagement.dto.DriverDocumentDTO;
+import com.mvpnest.fleetmanagement.dto.driverdocument.DriverDocumentDTO;
 import com.mvpnest.fleetmanagement.entity.DriverDocument;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

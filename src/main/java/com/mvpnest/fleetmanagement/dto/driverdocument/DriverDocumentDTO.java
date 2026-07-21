@@ -1,4 +1,4 @@
-package com.mvpnest.fleetmanagement.dto;
+package com.mvpnest.fleetmanagement.dto.driverdocument;
 
 import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentType;

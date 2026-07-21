@@ -1,7 +1,8 @@
 package com.mvpnest.fleetmanagement.controller;
 
-import com.mvpnest.fleetmanagement.dto.VehicleDocumentDTO;
-import com.mvpnest.fleetmanagement.dto.VehicleDocumentUploadRequest;
+import com.mvpnest.fleetmanagement.dto.vehicledocument.UploadVehicleDocumentRequest;
+import com.mvpnest.fleetmanagement.dto.vehicledocument.VehicleDocumentDTO;
+import com.mvpnest.fleetmanagement.dto.vehicledocument.UpdateVehicleDocumentRequest;
 import com.mvpnest.fleetmanagement.service.VehicleDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -19,56 +20,128 @@ public class VehicleDocumentController {
 
     private final VehicleDocumentService vehicleDocumentService;
 
-    @PostMapping
-    public VehicleDocumentDTO create(@RequestBody VehicleDocumentDTO dto) {
-        return vehicleDocumentService.createDocument(dto);
-    }
+
+    // =====================================================
+    // GET ONE
+    // =====================================================
 
     @GetMapping("/{id}")
-    public VehicleDocumentDTO getById(@PathVariable UUID id) {
+    public VehicleDocumentDTO getById(
+            @PathVariable UUID id
+    ) {
+
         return vehicleDocumentService.getDocumentById(id);
     }
 
+
+
+
+
+    // =====================================================
+    // GET ALL
+    // =====================================================
+
     @GetMapping
     public List<VehicleDocumentDTO> getAll() {
+
         return vehicleDocumentService.getAllDocuments();
+
     }
+
+
+
+
+
+    // =====================================================
+    // GET BY VEHICLE
+    // =====================================================
 
     @GetMapping("/vehicle/{vehicleId}")
-    public List<VehicleDocumentDTO> getByVehicle(@PathVariable UUID vehicleId) {
-        return vehicleDocumentService.getDocumentsByVehicleId(vehicleId);
-    }
-
-    @PutMapping("/{id}")
-    public VehicleDocumentDTO update(
-            @PathVariable UUID id,
-            @RequestBody VehicleDocumentDTO dto
+    public List<VehicleDocumentDTO> getByVehicle(
+            @PathVariable UUID vehicleId
     ) {
-        return vehicleDocumentService.updateDocument(id, dto);
+
+        return vehicleDocumentService
+                .getDocumentsByVehicleId(vehicleId);
+
     }
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) {
-        vehicleDocumentService.deleteDocument(id);
-    }
+
+
+
+
+    // =====================================================
+    // UPLOAD
+    // =====================================================
 
     @PostMapping("/upload")
     public VehicleDocumentDTO upload(
             @RequestPart("file") MultipartFile file,
-            @ModelAttribute VehicleDocumentUploadRequest request
+            @ModelAttribute UploadVehicleDocumentRequest request
     ) {
+
+
         return vehicleDocumentService.uploadDocument(
                 file,
-                request.getTitle(),
-                request.getType(),
-                request.getYear(),
-                request.getVehicleId()
+                request
         );
+
     }
 
+
+
+
+
+    // =====================================================
+    // UPDATE METADATA
+    // =====================================================
+
+    @PutMapping("/{id}")
+    public VehicleDocumentDTO update(
+            @PathVariable UUID id,
+            @RequestBody UpdateVehicleDocumentRequest request
+    ) {
+
+
+        return vehicleDocumentService.updateDocument(
+                id,
+                request
+        );
+
+    }
+
+
+
+
+
+    // =====================================================
+    // DELETE
+    // =====================================================
+
+    @DeleteMapping("/{id}")
+    public void delete(
+            @PathVariable UUID id
+    ) {
+
+        vehicleDocumentService.deleteDocument(id);
+
+    }
+
+
+
+
+
+    // =====================================================
+    // DOWNLOAD
+    // =====================================================
+
     @GetMapping("/{id}/download")
-    public ResponseEntity<Resource> download(@PathVariable UUID id) {
+    public ResponseEntity<Resource> download(
+            @PathVariable UUID id
+    ) {
+
         return vehicleDocumentService.downloadDocument(id);
+
     }
 
 

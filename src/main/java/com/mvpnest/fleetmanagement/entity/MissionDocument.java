@@ -1,5 +1,6 @@
 package com.mvpnest.fleetmanagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +29,7 @@ public class MissionDocument extends BaseEntity {
     // ================== ASSOCIATION ==================
 
     // MissionDocument (*) → Mission (1)
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "mission_id")
     private Mission mission;

@@ -1,8 +1,8 @@
 package com.mvpnest.fleetmanagement.controller;
 
 import com.mvpnest.fleetmanagement.dto.vehicle.VehicleDTO;
-import com.mvpnest.fleetmanagement.dto.vehicle.VehicleCreateRequest;
-import com.mvpnest.fleetmanagement.dto.vehicle.VehicleUpdateRequest;
+import com.mvpnest.fleetmanagement.dto.vehicle.CreateVehicleRequest;
+import com.mvpnest.fleetmanagement.dto.vehicle.UpdateVehicleRequest;
 import com.mvpnest.fleetmanagement.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +24,7 @@ public class VehicleController {
     // ==========================================================
 
     @PostMapping
-    public VehicleDTO create(@RequestBody VehicleCreateRequest request) {
+    public VehicleDTO create(@RequestBody CreateVehicleRequest request) {
 
         return vehicleService.createVehicle(request);
 
@@ -70,7 +70,7 @@ public class VehicleController {
     @PutMapping("/{id}")
     public VehicleDTO update(
             @PathVariable UUID id,
-            @RequestBody VehicleUpdateRequest request
+            @RequestBody UpdateVehicleRequest request
     ) {
 
         return vehicleService.updateVehicle(id, request);

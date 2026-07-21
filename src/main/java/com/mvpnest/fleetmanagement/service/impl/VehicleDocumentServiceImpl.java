@@ -1,9 +1,10 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
-import com.mvpnest.fleetmanagement.dto.VehicleDocumentDTO;
+import com.mvpnest.fleetmanagement.dto.vehicledocument.UpdateVehicleDocumentRequest;
+import com.mvpnest.fleetmanagement.dto.vehicledocument.UploadVehicleDocumentRequest;
+import com.mvpnest.fleetmanagement.dto.vehicledocument.VehicleDocumentDTO;
 import com.mvpnest.fleetmanagement.entity.Vehicle;
 import com.mvpnest.fleetmanagement.entity.VehicleDocument;
-import com.mvpnest.fleetmanagement.enums.VehicleType;
 import com.mvpnest.fleetmanagement.mapper.VehicleDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.VehicleDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.VehicleRepository;
@@ -22,7 +23,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,32 +31,38 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class VehicleDocumentServiceImpl implements VehicleDocumentService {
 
+
     private final VehicleRepository vehicleRepository;
     private final VehicleDocumentRepository vehicleDocumentRepository;
     private final VehicleDocumentMapper mapper;
+
+
     @Value("${app.upload.dir}")
     private String uploadDir;
 
-    @Override
-    public VehicleDocumentDTO createDocument(VehicleDocumentDTO dto) {
 
-        Vehicle vehicle = vehicleRepository.findById(dto.getVehicleId())
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-        VehicleDocument document = mapper.toEntity(dto);
-        document.setVehicle(vehicle);
-
-        return mapper.toDTO(vehicleDocumentRepository.save(document));
-    }
+    // =====================================================
+    // GET BY ID
+    // =====================================================
 
     @Override
     public VehicleDocumentDTO getDocumentById(UUID id) {
 
-        VehicleDocument document = vehicleDocumentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("VehicleDocument not found with id: " + id));
+        VehicleDocument document =
+                vehicleDocumentRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException("Vehicle document not found")
+                        );
 
         return mapper.toDTO(document);
     }
+
+
+
+    // =====================================================
+    // GET ALL
+    // =====================================================
 
     @Override
     public List<VehicleDocumentDTO> getAllDocuments() {
@@ -66,6 +73,12 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
                 .toList();
     }
 
+
+
+    // =====================================================
+    // GET BY VEHICLE
+    // =====================================================
+
     @Override
     public List<VehicleDocumentDTO> getDocumentsByVehicleId(UUID vehicleId) {
 
@@ -75,93 +88,215 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
                 .toList();
     }
 
-    @Override
-    public VehicleDocumentDTO updateDocument(UUID id, VehicleDocumentDTO dto) {
 
-        VehicleDocument existing = vehicleDocumentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("VehicleDocument not found with id: " + id));
 
-        Vehicle vehicle = vehicleRepository.findById(dto.getVehicleId())
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-        existing.setTitle(dto.getTitle());
-        existing.setType(dto.getType());
-        existing.setFileUrl(dto.getFileUrl());
-        existing.setYear(dto.getYear());
-        existing.setVehicle(vehicle);
-
-        return mapper.toDTO(vehicleDocumentRepository.save(existing));
-    }
+    // =====================================================
+    // UPLOAD DOCUMENT
+    // =====================================================
 
     @Override
-    public void deleteDocument(UUID id) {
+    public VehicleDocumentDTO uploadDocument(
+            MultipartFile file,
+            UploadVehicleDocumentRequest request
+    ) {
 
-        VehicleDocument document = vehicleDocumentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("VehicleDocument not found with id: " + id));
-
-        vehicleDocumentRepository.delete(document);
-    }
-
-    @Override
-    public VehicleDocumentDTO uploadDocument(MultipartFile file, String title, VehicleType type, Integer year, UUID vehicleId) {
         try {
+
             if (file.isEmpty()) {
                 throw new RuntimeException("File is empty");
             }
 
-            Path uploadPath = Paths.get(uploadDir, "vehicle-documents");
+
+            Vehicle vehicle =
+                    vehicleRepository.findById(request.getVehicleId())
+                            .orElseThrow(() ->
+                                    new RuntimeException("Vehicle not found")
+                            );
+
+
+            Path uploadPath =
+                    Paths.get(uploadDir, "vehicle-documents");
+
+
             Files.createDirectories(uploadPath);
 
-            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path filePath = uploadPath.resolve(filename);
 
-            Files.copy(file.getInputStream(), filePath);
 
-            Vehicle vehicle = vehicleRepository.findById(vehicleId)
-                    .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+            String filename =
+                    UUID.randomUUID()
+                            + "_"
+                            + file.getOriginalFilename();
 
-            VehicleDocument document = VehicleDocument.builder()
-                    .title(title)
-                    .type(type)
-                    .year(year)
-                    .fileUrl(filename)
-                    .vehicle(vehicle)
-                    .build();
 
-            return mapper.toDTO(vehicleDocumentRepository.save(document));
+
+            Path filePath =
+                    uploadPath.resolve(filename);
+
+
+
+            Files.copy(
+                    file.getInputStream(),
+                    filePath,
+                    StandardCopyOption.REPLACE_EXISTING
+            );
+
+
+
+            VehicleDocument document =
+                    VehicleDocument.builder()
+                            .title(request.getTitle())
+                            .type(request.getType())
+                            .year(request.getYear())
+                            .fileUrl(filename)
+                            .vehicle(vehicle)
+                            .build();
+
+
+
+            return mapper.toDTO(
+                    vehicleDocumentRepository.save(document)
+            );
+
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to upload file: " + e.getMessage());
+
+            throw new RuntimeException(
+                    "Upload failed: " + e.getMessage()
+            );
         }
     }
+
+
+
+
+
+    // =====================================================
+    // UPDATE METADATA
+    // =====================================================
+
+    @Override
+    public VehicleDocumentDTO updateDocument(
+            UUID id,
+            UpdateVehicleDocumentRequest request
+    ) {
+
+
+        VehicleDocument document =
+                vehicleDocumentRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException("Vehicle document not found")
+                        );
+
+
+
+        document.setTitle(request.getTitle());
+
+        document.setType(request.getType());
+
+        document.setYear(request.getYear());
+
+
+
+        return mapper.toDTO(
+                vehicleDocumentRepository.save(document)
+        );
+    }
+
+
+
+
+
+    // =====================================================
+    // DELETE
+    // =====================================================
+
+    @Override
+    public void deleteDocument(UUID id) {
+
+
+        VehicleDocument document =
+                vehicleDocumentRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException("Vehicle document not found")
+                        );
+
+
+        vehicleDocumentRepository.delete(document);
+    }
+
+
+
+
+
+    // =====================================================
+    // DOWNLOAD
+    // =====================================================
 
     @Override
     public ResponseEntity<Resource> downloadDocument(UUID id) {
 
+
         try {
-            VehicleDocument doc = vehicleDocumentRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Document not found"));
 
-            String filename = doc.getFileUrl();
 
-            Path filePath = Paths.get(uploadDir, "vehicle-documents")
-                    .resolve(filename)
-                    .normalize();
+            VehicleDocument document =
+                    vehicleDocumentRepository.findById(id)
+                            .orElseThrow(() ->
+                                    new RuntimeException("Document not found")
+                            );
 
-            Resource resource = new UrlResource(filePath.toUri());
 
-            if (!resource.exists() || !resource.isReadable()) {
-                throw new RuntimeException("File not found or not readable: " + filename);
+
+            Path filePath =
+                    Paths.get(
+                            uploadDir,
+                            "vehicle-documents",
+                            document.getFileUrl()
+                    ).normalize();
+
+
+
+            Resource resource =
+                    new UrlResource(filePath.toUri());
+
+
+
+            if (!resource.exists()
+                    || !resource.isReadable()) {
+
+                throw new RuntimeException(
+                        "File not found"
+                );
             }
 
+
+
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + resource.getFilename() + "\"")
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+
+                    .header(
+                            HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\""
+                                    + resource.getFilename()
+                                    + "\""
+                    )
+
+                    .contentType(
+                            MediaType.APPLICATION_OCTET_STREAM
+                    )
+
                     .body(resource);
 
+
+
         } catch (Exception e) {
-            throw new RuntimeException("Download failed: " + e.getMessage());
+
+
+            throw new RuntimeException(
+                    "Download failed: "
+                            + e.getMessage()
+            );
         }
     }
+
 }
