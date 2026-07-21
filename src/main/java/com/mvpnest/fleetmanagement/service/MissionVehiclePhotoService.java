@@ -1,21 +1,27 @@
 package com.mvpnest.fleetmanagement.service;
 
-import com.mvpnest.fleetmanagement.entity.MissionVehiclePhoto;
+
+import com.mvpnest.fleetmanagement.dto.missionvehiclephoto.MissionVehiclePhotoDTO;
+import com.mvpnest.fleetmanagement.dto.missionvehiclephoto.UpdateMissionVehiclePhotoRequest;
+import org.springframework.web.multipart.MultipartFile;
+
 
 import java.util.List;
 import java.util.UUID;
 
+
 public interface MissionVehiclePhotoService {
 
-    MissionVehiclePhoto createPhoto(MissionVehiclePhoto photo);
 
-    MissionVehiclePhoto getPhotoById(UUID id);
+    MissionVehiclePhotoDTO uploadPhoto(MultipartFile file, UUID inspectionId, String description);
 
-    List<MissionVehiclePhoto> getAllPhotos();
+    MissionVehiclePhotoDTO getPhotoById(UUID id);
 
-    List<MissionVehiclePhoto> getPhotosByInspectionId(UUID inspectionId);
+    List<MissionVehiclePhotoDTO> getAllPhotos();
 
-    MissionVehiclePhoto updatePhoto(UUID id, MissionVehiclePhoto photo);
+    List<MissionVehiclePhotoDTO> getPhotosByInspectionId(UUID inspectionId);
+
+    MissionVehiclePhotoDTO updatePhoto(UUID id, UpdateMissionVehiclePhotoRequest request);
 
     void deletePhoto(UUID id);
 

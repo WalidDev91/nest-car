@@ -1,21 +1,24 @@
 package com.mvpnest.fleetmanagement.service;
 
-import com.mvpnest.fleetmanagement.entity.MissionVehicleInspection;
+import com.mvpnest.fleetmanagement.dto.missionvehicleinspection.CreateMissionVehicleInspectionRequest;
+import com.mvpnest.fleetmanagement.dto.missionvehicleinspection.MissionVehicleInspectionDTO;
+import com.mvpnest.fleetmanagement.dto.missionvehicleinspection.UpdateMissionVehicleInspectionRequest;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface MissionVehicleInspectionService {
 
-    MissionVehicleInspection createInspection(MissionVehicleInspection inspection);
 
-    MissionVehicleInspection getInspectionById(UUID id);
+    MissionVehicleInspectionDTO createInspection(CreateMissionVehicleInspectionRequest request);
 
-    List<MissionVehicleInspection> getAllInspections();
+    MissionVehicleInspectionDTO getInspectionById(UUID id);
 
-    MissionVehicleInspection getByMissionId(UUID missionId);
+    List<MissionVehicleInspectionDTO> getAllInspections();
 
-    MissionVehicleInspection updateInspection(UUID id, MissionVehicleInspection inspection);
+    MissionVehicleInspectionDTO getByMissionId(UUID missionId);
+
+    MissionVehicleInspectionDTO updateInspection(UUID id, UpdateMissionVehicleInspectionRequest request);
 
     void deleteInspection(UUID id);
 

@@ -1,6 +1,6 @@
 package com.mvpnest.fleetmanagement.dto.mission;
 
-import com.mvpnest.fleetmanagement.dto.MissionVehicleInspectionDTO;
+import com.mvpnest.fleetmanagement.dto.missionvehicleinspection.MissionVehicleInspectionDTO;
 import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import lombok.*;
 

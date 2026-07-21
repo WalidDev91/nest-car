@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,8 +43,9 @@ public class MissionVehicleInspection extends BaseEntity {
     // fix: each inspection belongs to exactly one mission
 
     // 2️⃣ MissionVehicleInspection (1) → MissionVehiclePhoto (*)
-    @OneToMany(mappedBy = "inspection", cascade = CascadeType.ALL)
-    private List<MissionVehiclePhoto> photos;
+    @OneToMany(mappedBy = "inspection", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<MissionVehiclePhoto> photos = new ArrayList<>();
     // fix: one inspection can have multiple photos
 
 }

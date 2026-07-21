@@ -13,8 +13,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode
-public class MissionVehiclePhoto {
+@EqualsAndHashCode(callSuper = true)
+public class MissionVehiclePhoto extends BaseEntity {
 
     @Id
     @GeneratedValue
@@ -32,8 +32,8 @@ public class MissionVehiclePhoto {
     // ================== ASSOCIATION ==================
 
     // MissionVehiclePhoto (*) → MissionVehicleInspection (1)
-    @ManyToOne
-    @JoinColumn(name = "inspection_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inspection_id", nullable = false)
     private MissionVehicleInspection inspection;
     // fix: each photo belongs to one inspection
 

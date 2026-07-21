@@ -8,6 +8,5 @@ import java.util.UUID;
 @Repository
 public interface MissionVehicleInspectionRepository extends JpaRepository<MissionVehicleInspection, UUID> {
 
-    // find inspection by mission
     MissionVehicleInspection findByMissionId(UUID missionId);
 }

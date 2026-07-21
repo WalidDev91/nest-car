@@ -10,6 +10,5 @@ import java.util.UUID;
 @Repository
 public interface MissionVehiclePhotoRepository extends JpaRepository<MissionVehiclePhoto, UUID> {
 
-    // get all photos for a specific inspection
     List<MissionVehiclePhoto> findByInspectionId(UUID inspectionId);
 }

@@ -1,8 +1,10 @@
-package com.mvpnest.fleetmanagement.dto;
+package com.mvpnest.fleetmanagement.dto.missionvehicleinspection;
 
+import com.mvpnest.fleetmanagement.dto.missionvehiclephoto.MissionVehiclePhotoDTO;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,5 +32,6 @@ public class MissionVehicleInspectionDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private List<MissionVehiclePhotoDTO> photos;
+    @Builder.Default
+    private List<MissionVehiclePhotoDTO> photos = new ArrayList<>();
 }
