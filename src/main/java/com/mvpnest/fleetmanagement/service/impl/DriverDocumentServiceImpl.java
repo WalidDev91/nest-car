@@ -3,55 +3,37 @@ package com.mvpnest.fleetmanagement.service.impl;
 
 import com.mvpnest.fleetmanagement.dto.driverdocument.DriverDocumentDTO;
 import com.mvpnest.fleetmanagement.dto.driverdocument.UpdateDriverDocumentRequest;
-
 import com.mvpnest.fleetmanagement.entity.DriverDocument;
 import com.mvpnest.fleetmanagement.entity.User;
-
 import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
-
-
 import com.mvpnest.fleetmanagement.mapper.DriverDocumentMapper;
-
 import com.mvpnest.fleetmanagement.repository.DriverDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
-
+import com.mvpnest.fleetmanagement.security.SecurityUtils;
 import com.mvpnest.fleetmanagement.service.DriverDocumentService;
-
-
 import lombok.RequiredArgsConstructor;
-
-
 import org.springframework.beans.factory.annotation.Value;
-
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-
-import org.springframework.http.*;
-
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import org.springframework.web.multipart.MultipartFile;
 
-
-
 import java.io.IOException;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import java.time.LocalDateTime;
-
 import java.util.List;
 import java.util.UUID;
-
 
 
 @Service
 @RequiredArgsConstructor
 public class DriverDocumentServiceImpl implements DriverDocumentService {
-
 
 
     private final DriverDocumentRepository repository;
@@ -61,186 +43,132 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
     private final DriverDocumentMapper mapper;
 
 
-
     @Value("${app.upload.dir}")
     private String uploadDir;
 
 
-
-
-
-
     @Override
-    public DriverDocumentDTO getDocumentById(UUID id){
+    public DriverDocumentDTO getDocumentById(UUID id) {
 
 
-        DriverDocument document =
-                repository.findById(id)
-                        .orElseThrow(
-                                () -> new RuntimeException(
-                                        "Document not found"
-                                )
-                        );
+        DriverDocument document = repository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
 
         return mapper.toDTO(document);
 
     }
 
-
-
-
-
-
-
     @Override
-    public List<DriverDocumentDTO> getAllDocuments(){
+    public List<DriverDocumentDTO> getAllDocuments() {
+
+        User currentUser = SecurityUtils.getCurrentUser();
+
+        if (currentUser == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        List<DriverDocument> documents;
+
+        switch (currentUser.getRole()) {
+
+            case SUPER_ADMIN -> {
+
+                documents = repository.findAll();
+
+            }
+
+            case ADMIN -> {
+
+                List<User> fleetManagers = userRepository.findByAdmin(currentUser);
+
+                List<UUID> driverIds = fleetManagers.stream().flatMap(fm -> userRepository.findByAdmin(fm).stream()).map(User::getId).toList();
+
+                documents = repository.findAll().stream().filter(doc -> driverIds.contains(doc.getDriver().getId())).toList();
+
+            }
+
+            case FLEET_MANAGER -> {
+
+                List<User> drivers = userRepository.findByAdmin(currentUser);
+
+                List<UUID> driverIds = drivers.stream().map(User::getId).toList();
+
+                documents = repository.findAll().stream().filter(doc -> driverIds.contains(doc.getDriver().getId())).toList();
+            }
+
+            case DRIVER -> {
+
+                documents = repository.findByDriverId(currentUser.getId());
+
+            }
 
 
-        return repository.findAll()
-                .stream()
-                .map(mapper::toDTO)
-                .toList();
+            default -> documents = List.of();
+
+        }
+
+        return documents.stream().map(mapper::toDTO).toList();
 
     }
 
 
-
-
-
-
-
     @Override
-    public List<DriverDocumentDTO> getMyDocuments(UUID userId){
+    public List<DriverDocumentDTO> getMyDocuments(UUID userId) {
 
 
-        return repository.findByDriverId(userId)
-                .stream()
-                .map(mapper::toDTO)
-                .toList();
+        return repository.findByDriverId(userId).stream().map(mapper::toDTO).toList();
 
     }
 
 
-
-
-
-
-
     @Override
-    public List<DriverDocumentDTO> getDocumentsByStatus(
-            DriverDocumentStatus status
-    ){
+    public List<DriverDocumentDTO> getDocumentsByStatus(DriverDocumentStatus status) {
 
 
-        return repository.findByStatus(status)
-                .stream()
-                .map(mapper::toDTO)
-                .toList();
+        return repository.findByStatus(status).stream().map(mapper::toDTO).toList();
 
     }
 
 
-
-
-
-
-
-
-
     @Override
-    public DriverDocumentDTO uploadDocument(
-            MultipartFile file,
-            String title,
-            DriverDocumentType type,
-            UUID driverId
-    ){
+    public DriverDocumentDTO uploadDocument(MultipartFile file, String title, DriverDocumentType type, UUID driverId) {
 
 
         try {
 
 
-            if(file.isEmpty()){
-                throw new RuntimeException(
-                        "File is empty"
-                );
+            if (file.isEmpty()) {
+                throw new RuntimeException("File is empty");
             }
 
 
-
-            Path folder =
-                    Paths.get(
-                            uploadDir,
-                            "driver-documents"
-                    );
+            Path folder = Paths.get(uploadDir, "driver-documents");
 
 
             Files.createDirectories(folder);
 
 
-
-            String filename =
-                    UUID.randomUUID()
-                            +
-                            "_"
-                            +
-                            file.getOriginalFilename();
+            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
 
-
-            Path path =
-                    folder.resolve(filename);
+            Path path = folder.resolve(filename);
 
 
-
-            Files.copy(
-                    file.getInputStream(),
-                    path
-            );
+            Files.copy(file.getInputStream(), path);
 
 
+            User driver = userRepository.findById(driverId).orElseThrow(() -> new RuntimeException("Driver not found"));
 
 
-            User driver =
-                    userRepository.findById(driverId)
-                            .orElseThrow(
-                                    () -> new RuntimeException(
-                                            "Driver not found"
-                                    )
-                            );
+            DriverDocument document = DriverDocument.builder().title(title).type(type).fileUrl(filename).status(DriverDocumentStatus.PENDING).uploadedAt(LocalDateTime.now()).driver(driver).build();
 
 
+            return mapper.toDTO(repository.save(document));
 
 
-            DriverDocument document =
-                    DriverDocument.builder()
-                            .title(title)
-                            .type(type)
-                            .fileUrl(filename)
-                            .status(
-                                    DriverDocumentStatus.PENDING
-                            )
-                            .uploadedAt(
-                                    LocalDateTime.now()
-                            )
-                            .driver(driver)
-                            .build();
+        } catch (IOException e) {
 
-
-
-
-            return mapper.toDTO(
-                    repository.save(document)
-            );
-
-
-
-        }
-        catch(IOException e){
-
-            throw new RuntimeException(
-                    "Upload failed"
-            );
+            throw new RuntimeException("Upload failed");
 
         }
 
@@ -248,63 +176,32 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
     }
 
 
-
-
-
-
-
-
-
     @Override
-    public DriverDocumentDTO updateDocument(
-            UUID id,
-            UpdateDriverDocumentRequest request
-    ) {
+    public DriverDocumentDTO updateDocument(UUID id, UpdateDriverDocumentRequest request) {
 
-        DriverDocument document =
-                repository.findById(id)
-                        .orElseThrow(
-                                () -> new RuntimeException(
-                                        "Document not found"
-                                )
-                        );
+        DriverDocument document = repository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
 
-        if(request.getTitle() != null){
+        if (request.getTitle() != null) {
             document.setTitle(request.getTitle());
         }
 
 
-        if(request.getType() != null){
+        if (request.getType() != null) {
             document.setType(request.getType());
         }
 
 
-        return mapper.toDTO(
-                repository.save(document)
-        );
+        return mapper.toDTO(repository.save(document));
 
     }
 
 
-
-
-
-
-
-
-
     @Override
-    public void deleteDocument(UUID id){
+    public void deleteDocument(UUID id) {
 
 
-        DriverDocument document =
-                repository.findById(id)
-                        .orElseThrow(
-                                () -> new RuntimeException(
-                                        "Document not found"
-                                )
-                        );
+        DriverDocument document = repository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
 
         repository.delete(document);
@@ -312,26 +209,14 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
     }
 
 
-
-
-
-
-
-
-
     @Override
     public ResponseEntity<Resource> downloadDocument(UUID id) {
 
         try {
 
-            DriverDocument document =
-                    repository.findById(id)
-                            .orElseThrow(
-                                    () -> new RuntimeException("Document not found")
-                            );
+            DriverDocument document = repository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
-            Path path =
-                    Paths.get(uploadDir, "driver-documents", document.getFileUrl());
+            Path path = Paths.get(uploadDir, "driver-documents", document.getFileUrl());
 
             Resource resource = new UrlResource(path.toUri());
 
@@ -350,63 +235,32 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
             String storedName = document.getFileUrl();
             String downloadName = storedName.substring(storedName.indexOf('_') + 1);
 
-            return ResponseEntity.ok()
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + downloadName + "\""
-                    )
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .body(resource);
+            return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + downloadName + "\"").contentType(MediaType.parseMediaType(contentType)).body(resource);
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Download failed");
         }
     }
 
 
-
-
-
-
-
-
-
     @Override
-    public DriverDocumentDTO updateStatus(
-            UUID id,
-            DriverDocumentStatus status
-    ){
+    public DriverDocumentDTO updateStatus(UUID id, DriverDocumentStatus status) {
 
 
-
-        DriverDocument document =
-                repository.findById(id)
-                        .orElseThrow(
-                                () -> new RuntimeException(
-                                        "Document not found"
-                                )
-                        );
-
+        DriverDocument document = repository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
 
         document.setStatus(status);
 
 
+        if (status == DriverDocumentStatus.APPROVED) {
 
-        if(status == DriverDocumentStatus.APPROVED){
-
-            document.setValidatedAt(
-                    LocalDateTime.now()
-            );
+            document.setValidatedAt(LocalDateTime.now());
 
         }
 
 
-
-        return mapper.toDTO(
-                repository.save(document)
-        );
+        return mapper.toDTO(repository.save(document));
 
     }
 

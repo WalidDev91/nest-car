@@ -23,4 +23,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByResetToken(String resetToken);
 
     List<User> findByAdminId(UUID adminId);
+
+    List<User> findByAdmin(User admin);
+
 }
