@@ -320,75 +320,48 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
 
 
     @Override
-    public ResponseEntity<Resource> downloadDocument(UUID id){
-
+    public ResponseEntity<Resource> downloadDocument(UUID id) {
 
         try {
-
 
             DriverDocument document =
                     repository.findById(id)
                             .orElseThrow(
-                                    () -> new RuntimeException(
-                                            "Document not found"
-                                    )
+                                    () -> new RuntimeException("Document not found")
                             );
 
-
-
             Path path =
-                    Paths.get(
-                            uploadDir,
-                            "driver-documents",
-                            document.getFileUrl()
-                    );
+                    Paths.get(uploadDir, "driver-documents", document.getFileUrl());
 
+            Resource resource = new UrlResource(path.toUri());
 
-
-            Resource resource =
-                    new UrlResource(
-                            path.toUri()
-                    );
-
-
-
-            if(!resource.exists()){
-
-                throw new RuntimeException(
-                        "File not found"
-                );
-
+            if (!resource.exists()) {
+                throw new RuntimeException("File not found");
             }
 
+            // Derive content type from the file itself (extension/signature) —
+            // no need to store it separately.
+            String contentType = Files.probeContentType(path);
+            if (contentType == null || contentType.isBlank()) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            }
 
+            // Strip the "UUID_" prefix so the user downloads a clean, correctly-named file
+            String storedName = document.getFileUrl();
+            String downloadName = storedName.substring(storedName.indexOf('_') + 1);
 
             return ResponseEntity.ok()
                     .header(
                             HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\""
-                                    +
-                                    resource.getFilename()
-                                    +
-                                    "\""
+                            "attachment; filename=\"" + downloadName + "\""
                     )
-                    .contentType(
-                            MediaType.APPLICATION_OCTET_STREAM
-                    )
+                    .contentType(MediaType.parseMediaType(contentType))
                     .body(resource);
 
-
-
         }
-        catch(Exception e){
-
-
-            throw new RuntimeException(
-                    "Download failed"
-            );
-
+        catch (Exception e) {
+            throw new RuntimeException("Download failed");
         }
-
-
     }
 
 
