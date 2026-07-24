@@ -3,6 +3,8 @@ package com.mvpnest.fleetmanagement.dto.auth;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,5 +18,6 @@ public class RegisterRequest {
     private String password;
     private String phone;
     private RoleType role;
+    private UUID adminId;
 
 }

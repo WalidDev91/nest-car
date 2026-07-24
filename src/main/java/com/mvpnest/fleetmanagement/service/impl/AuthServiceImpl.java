@@ -1,20 +1,19 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
 import com.mvpnest.fleetmanagement.dto.auth.AuthResponse;
+import com.mvpnest.fleetmanagement.dto.auth.ForgotPasswordRequest;
 import com.mvpnest.fleetmanagement.dto.auth.LoginRequest;
 import com.mvpnest.fleetmanagement.dto.auth.RegisterRequest;
+import com.mvpnest.fleetmanagement.dto.auth.ResetPasswordRequest;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.security.JwtService;
 import com.mvpnest.fleetmanagement.service.AuthService;
+import com.mvpnest.fleetmanagement.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.mvpnest.fleetmanagement.dto.auth.ForgotPasswordRequest;
-import com.mvpnest.fleetmanagement.dto.auth.ResetPasswordRequest;
-import com.mvpnest.fleetmanagement.service.EmailService;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -45,13 +44,13 @@ public class AuthServiceImpl implements AuthService {
                 .id(user.getId())
                 .token(token)
                 .email(user.getEmail())
+                .phone(user.getPhone())
                 .role(user.getRole().name())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .build();
     }
 
-    // ================== REGISTER ==================
     @Override
     public AuthResponse register(RegisterRequest request) {
 
@@ -59,12 +58,21 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Email already exists");
         }
 
+        User admin = null;
+
+        if (request.getAdminId() != null) {
+            admin = userRepository.findById(request.getAdminId())
+                    .orElseThrow(() -> new RuntimeException("Admin not found"));
+        }
+
         User user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
+                .phone(request.getPhone())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(RoleType.DRIVER)
+                .role(request.getRole())
+                .admin(admin)
                 .isValidate(true)
                 .build();
 
@@ -76,70 +84,45 @@ public class AuthServiceImpl implements AuthService {
                 .id(user.getId())
                 .token(token)
                 .email(user.getEmail())
+                .phone(user.getPhone())
                 .role(user.getRole().name())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .build();
     }
 
+    // ================== FORGOT PASSWORD ==================
     @Override
     public void forgotPassword(ForgotPasswordRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() ->
-                        new RuntimeException("User not found")
-                );
-
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         String token = UUID.randomUUID().toString();
 
-
         user.setResetToken(token);
-
         user.setResetTokenExpiration(LocalDateTime.now().plusMinutes(5));
-
 
         userRepository.save(user);
 
-
-        emailService.sendResetPasswordEmail(
-                user.getEmail(),
-                token
-        );
+        emailService.sendResetPasswordEmail(user.getEmail(), token);
     }
 
-
+    // ================== RESET PASSWORD ==================
     @Override
     public void resetPassword(ResetPasswordRequest request) {
 
-
         User user = userRepository.findByResetToken(request.getToken())
-                .orElseThrow(() ->
-                        new RuntimeException("Invalid token")
-                );
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
 
-
-        if(user.getResetTokenExpiration()
-                .isBefore(LocalDateTime.now())) {
-
+        if (user.getResetTokenExpiration().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Token expired");
-
         }
 
-
-        user.setPassword(
-                passwordEncoder.encode(
-                        request.getNewPassword()
-                )
-        );
-
-
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setResetToken(null);
         user.setResetTokenExpiration(null);
 
-
         userRepository.save(user);
-
     }
-
 }
