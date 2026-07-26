@@ -6,26 +6,29 @@ import com.mvpnest.fleetmanagement.dto.missiondocument.UpdateMissionDocumentRequ
 import com.mvpnest.fleetmanagement.dto.missiondocument.UploadMissionDocumentRequest;
 import com.mvpnest.fleetmanagement.entity.Mission;
 import com.mvpnest.fleetmanagement.entity.MissionDocument;
+import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.mapper.MissionDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.MissionDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.MissionRepository;
+import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.service.MissionDocumentService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
-
 
 
 @Service
@@ -33,20 +36,14 @@ import java.util.UUID;
 public class MissionDocumentServiceImpl implements MissionDocumentService {
 
 
-
     private final MissionRepository missionRepository;
-
     private final MissionDocumentRepository missionDocumentRepository;
-
+    private final UserRepository userRepository;
     private final MissionDocumentMapper mapper;
-
 
 
     @Value("${app.upload.dir}")
     private String uploadDir;
-
-
-
 
 
     // =====================================================
@@ -57,11 +54,7 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     public MissionDocumentDTO getDocumentById(UUID id) {
 
 
-        MissionDocument document =
-                missionDocumentRepository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException("Mission document not found")
-                        );
+        MissionDocument document = missionDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Mission document not found"));
 
 
         return mapper.toDTO(document);
@@ -69,26 +62,54 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     }
 
 
-
-
-
     // =====================================================
     // GET ALL
     // =====================================================
 
     @Override
-    public List<MissionDocumentDTO> getAllDocuments() {
+    public List<MissionDocumentDTO> getAllDocuments(User currentUser) {
 
+        List<MissionDocument> documents;
 
-        return missionDocumentRepository.findAll()
-                .stream()
-                .map(mapper::toDTO)
-                .toList();
+        switch (currentUser.getRole()) {
+
+            case SUPER_ADMIN -> documents = missionDocumentRepository.findAll();
+
+            case ADMIN -> {
+
+                List<User> fleetManagers = userRepository.findByAdmin(currentUser);
+
+                List<UUID> fleetManagerIds = fleetManagers.stream().map(User::getId).toList();
+
+                documents = missionDocumentRepository.findAll().stream().filter(doc -> doc.getMission() != null && doc.getMission().getDriver() != null && doc.getMission().getDriver().getAdmin() != null && fleetManagerIds.contains(doc.getMission().getDriver().getAdmin().getId())).toList();
+            }
+
+            case FLEET_MANAGER -> {
+
+                List<User> drivers = userRepository.findByAdmin(currentUser);
+
+                List<UUID> driverIds = drivers.stream().map(User::getId).toList();
+
+                documents = missionDocumentRepository.findAll().stream().filter(doc -> doc.getMission() != null && doc.getMission().getDriver() != null && driverIds.contains(doc.getMission().getDriver().getId())).toList();
+
+            }
+
+            case DRIVER -> {
+
+                User driver = userRepository.findById(currentUser.getId()).orElseThrow(() -> new RuntimeException("Driver not found"));
+
+                List<UUID> missionIds = driver.getMissions().stream().map(Mission::getId).toList();
+                documents = missionDocumentRepository.findAll().stream().filter(doc -> missionIds.contains(doc.getMission().getId())).toList();
+
+            }
+
+            default -> documents = List.of();
+
+        }
+
+        return documents.stream().map(mapper::toDTO).toList();
 
     }
-
-
-
 
 
     // =====================================================
@@ -99,15 +120,9 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     public List<MissionDocumentDTO> getDocumentsByMissionId(UUID missionId) {
 
 
-        return missionDocumentRepository.findByMissionId(missionId)
-                .stream()
-                .map(mapper::toDTO)
-                .toList();
+        return missionDocumentRepository.findByMissionId(missionId).stream().map(mapper::toDTO).toList();
 
     }
-
-
-
 
 
     // =====================================================
@@ -115,91 +130,51 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     // =====================================================
 
     @Override
-    public MissionDocumentDTO uploadDocument(
-            MultipartFile file,
-            UploadMissionDocumentRequest request
-    ) {
+    public MissionDocumentDTO uploadDocument(MultipartFile file, UploadMissionDocumentRequest request) {
 
 
         try {
 
 
-            if(file.isEmpty()) {
+            if (file.isEmpty()) {
 
                 throw new RuntimeException("File is empty");
 
             }
 
 
-
-            Mission mission =
-                    missionRepository.findById(request.getMissionId())
-                            .orElseThrow(() ->
-                                    new RuntimeException("Mission not found")
-                            );
+            Mission mission = missionRepository.findById(request.getMissionId()).orElseThrow(() -> new RuntimeException("Mission not found"));
 
 
-
-            Path uploadPath =
-                    Paths.get(uploadDir, "mission-documents");
-
+            Path uploadPath = Paths.get(uploadDir, "mission-documents");
 
 
             Files.createDirectories(uploadPath);
 
 
+            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
 
-            String filename =
-                    UUID.randomUUID()
-                            + "_"
-                            + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(filename);
 
 
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
 
-            Path filePath =
-                    uploadPath.resolve(filename);
+            MissionDocument document = MissionDocument.builder().title(request.getTitle()).fileUrl(filename).mission(mission).build();
 
 
-
-            Files.copy(
-                    file.getInputStream(),
-                    filePath,
-                    StandardCopyOption.REPLACE_EXISTING
-            );
+            return mapper.toDTO(missionDocumentRepository.save(document));
 
 
+        } catch (IOException e) {
 
 
-            MissionDocument document =
-                    MissionDocument.builder()
-                            .title(request.getTitle())
-                            .fileUrl(filename)
-                            .mission(mission)
-                            .build();
-
-
-
-            return mapper.toDTO(
-                    missionDocumentRepository.save(document)
-            );
-
-
-
-        } catch(IOException e) {
-
-
-            throw new RuntimeException(
-                    "Upload failed: " + e.getMessage()
-            );
+            throw new RuntimeException("Upload failed: " + e.getMessage());
 
         }
 
     }
-
-
-
 
 
     // =====================================================
@@ -207,33 +182,18 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     // =====================================================
 
     @Override
-    public MissionDocumentDTO updateDocument(
-            UUID id,
-            UpdateMissionDocumentRequest request
-    ) {
+    public MissionDocumentDTO updateDocument(UUID id, UpdateMissionDocumentRequest request) {
 
 
-
-        MissionDocument document =
-                missionDocumentRepository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException("Mission document not found")
-                        );
-
+        MissionDocument document = missionDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Mission document not found"));
 
 
         document.setTitle(request.getTitle());
 
 
-
-        return mapper.toDTO(
-                missionDocumentRepository.save(document)
-        );
+        return mapper.toDTO(missionDocumentRepository.save(document));
 
     }
-
-
-
 
 
     // =====================================================
@@ -244,19 +204,12 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     public void deleteDocument(UUID id) {
 
 
-        MissionDocument document =
-                missionDocumentRepository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException("Mission document not found")
-                        );
+        MissionDocument document = missionDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Mission document not found"));
 
 
         missionDocumentRepository.delete(document);
 
     }
-
-
-
 
 
     // =====================================================
@@ -267,75 +220,39 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     public ResponseEntity<Resource> downloadDocument(UUID id) {
 
 
-
         try {
 
 
-
-            MissionDocument document =
-                    missionDocumentRepository.findById(id)
-                            .orElseThrow(() ->
-                                    new RuntimeException("Mission document not found")
-                            );
+            MissionDocument document = missionDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Mission document not found"));
 
 
+            Path filePath = Paths.get(uploadDir, "mission-documents").resolve(document.getFileUrl()).normalize();
 
 
-            Path filePath =
-                    Paths.get(
-                                    uploadDir,
-                                    "mission-documents"
-                            )
-                            .resolve(document.getFileUrl())
-                            .normalize();
+            Resource resource = new UrlResource(filePath.toUri());
 
 
+            if (!resource.exists() || !resource.isReadable()) {
 
 
-            Resource resource =
-                    new UrlResource(filePath.toUri());
-
-
-
-
-            if(!resource.exists()
-                    || !resource.isReadable()) {
-
-
-                throw new RuntimeException(
-                        "File not found"
-                );
+                throw new RuntimeException("File not found");
 
             }
 
 
-
-
             return ResponseEntity.ok()
 
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\""
-                                    + resource.getFilename()
-                                    + "\""
-                    )
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
 
-                    .contentType(
-                            MediaType.APPLICATION_OCTET_STREAM
-                    )
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
 
                     .body(resource);
 
 
+        } catch (Exception e) {
 
 
-        } catch(Exception e) {
-
-
-            throw new RuntimeException(
-                    "Download failed: "
-                            + e.getMessage()
-            );
+            throw new RuntimeException("Download failed: " + e.getMessage());
 
         }
 

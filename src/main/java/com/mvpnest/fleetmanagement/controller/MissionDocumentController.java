@@ -4,19 +4,17 @@ package com.mvpnest.fleetmanagement.controller;
 import com.mvpnest.fleetmanagement.dto.missiondocument.MissionDocumentDTO;
 import com.mvpnest.fleetmanagement.dto.missiondocument.UpdateMissionDocumentRequest;
 import com.mvpnest.fleetmanagement.dto.missiondocument.UploadMissionDocumentRequest;
+import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.service.MissionDocumentService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.util.List;
 import java.util.UUID;
-
 
 
 @RestController
@@ -25,9 +23,7 @@ import java.util.UUID;
 public class MissionDocumentController {
 
 
-
     private final MissionDocumentService missionDocumentService;
-
 
 
     // =====================================================
@@ -35,16 +31,11 @@ public class MissionDocumentController {
     // =====================================================
 
     @GetMapping("/{id}")
-    public MissionDocumentDTO getById(
-            @PathVariable UUID id
-    ) {
+    public MissionDocumentDTO getById(@PathVariable UUID id) {
 
         return missionDocumentService.getDocumentById(id);
 
     }
-
-
-
 
 
     // =====================================================
@@ -52,14 +43,11 @@ public class MissionDocumentController {
     // =====================================================
 
     @GetMapping
-    public List<MissionDocumentDTO> getAll() {
+    public List<MissionDocumentDTO> getAll(@AuthenticationPrincipal User user) {
 
-        return missionDocumentService.getAllDocuments();
+        return missionDocumentService.getAllDocuments(user);
 
     }
-
-
-
 
 
     // =====================================================
@@ -67,16 +55,11 @@ public class MissionDocumentController {
     // =====================================================
 
     @GetMapping("/mission/{missionId}")
-    public List<MissionDocumentDTO> getByMission(
-            @PathVariable UUID missionId
-    ) {
+    public List<MissionDocumentDTO> getByMission(@PathVariable UUID missionId) {
 
         return missionDocumentService.getDocumentsByMissionId(missionId);
 
     }
-
-
-
 
 
     // =====================================================
@@ -84,21 +67,12 @@ public class MissionDocumentController {
     // =====================================================
 
     @PostMapping("/upload")
-    public MissionDocumentDTO upload(
-            @RequestPart("file") MultipartFile file,
-            @ModelAttribute UploadMissionDocumentRequest request
-    ) {
+    public MissionDocumentDTO upload(@RequestPart("file") MultipartFile file, @ModelAttribute UploadMissionDocumentRequest request) {
 
 
-        return missionDocumentService.uploadDocument(
-                file,
-                request
-        );
+        return missionDocumentService.uploadDocument(file, request);
 
     }
-
-
-
 
 
     // =====================================================
@@ -106,21 +80,12 @@ public class MissionDocumentController {
     // =====================================================
 
     @PutMapping("/{id}")
-    public MissionDocumentDTO update(
-            @PathVariable UUID id,
-            @RequestBody UpdateMissionDocumentRequest request
-    ) {
+    public MissionDocumentDTO update(@PathVariable UUID id, @RequestBody UpdateMissionDocumentRequest request) {
 
 
-        return missionDocumentService.updateDocument(
-                id,
-                request
-        );
+        return missionDocumentService.updateDocument(id, request);
 
     }
-
-
-
 
 
     // =====================================================
@@ -128,9 +93,7 @@ public class MissionDocumentController {
     // =====================================================
 
     @DeleteMapping("/{id}")
-    public void delete(
-            @PathVariable UUID id
-    ) {
+    public void delete(@PathVariable UUID id) {
 
 
         missionDocumentService.deleteDocument(id);
@@ -138,17 +101,12 @@ public class MissionDocumentController {
     }
 
 
-
-
-
     // =====================================================
     // DOWNLOAD
     // =====================================================
 
     @GetMapping("/{id}/download")
-    public ResponseEntity<Resource> download(
-            @PathVariable UUID id
-    ) {
+    public ResponseEntity<Resource> download(@PathVariable UUID id) {
 
 
         return missionDocumentService.downloadDocument(id);

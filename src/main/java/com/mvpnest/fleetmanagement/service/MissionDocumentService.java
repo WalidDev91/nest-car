@@ -3,6 +3,7 @@ package com.mvpnest.fleetmanagement.service;
 import com.mvpnest.fleetmanagement.dto.missiondocument.MissionDocumentDTO;
 import com.mvpnest.fleetmanagement.dto.missiondocument.UpdateMissionDocumentRequest;
 import com.mvpnest.fleetmanagement.dto.missiondocument.UploadMissionDocumentRequest;
+import com.mvpnest.fleetmanagement.entity.User;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +16,7 @@ public interface MissionDocumentService {
 
     MissionDocumentDTO getDocumentById(UUID id);
 
-    List<MissionDocumentDTO> getAllDocuments();
+    List<MissionDocumentDTO> getAllDocuments(User currentUser);
 
     List<MissionDocumentDTO> getDocumentsByMissionId(UUID missionId);
 

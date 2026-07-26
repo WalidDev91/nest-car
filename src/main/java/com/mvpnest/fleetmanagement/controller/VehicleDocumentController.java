@@ -1,12 +1,14 @@
 package com.mvpnest.fleetmanagement.controller;
 
+import com.mvpnest.fleetmanagement.dto.vehicledocument.UpdateVehicleDocumentRequest;
 import com.mvpnest.fleetmanagement.dto.vehicledocument.UploadVehicleDocumentRequest;
 import com.mvpnest.fleetmanagement.dto.vehicledocument.VehicleDocumentDTO;
-import com.mvpnest.fleetmanagement.dto.vehicledocument.UpdateVehicleDocumentRequest;
+import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.service.VehicleDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,30 +28,23 @@ public class VehicleDocumentController {
     // =====================================================
 
     @GetMapping("/{id}")
-    public VehicleDocumentDTO getById(
-            @PathVariable UUID id
-    ) {
+    public VehicleDocumentDTO getById(@PathVariable UUID id) {
 
         return vehicleDocumentService.getDocumentById(id);
     }
-
-
-
 
 
     // =====================================================
     // GET ALL
     // =====================================================
 
-    @GetMapping
-    public List<VehicleDocumentDTO> getAll() {
 
-        return vehicleDocumentService.getAllDocuments();
+    @GetMapping
+    public List<VehicleDocumentDTO> getAll(@AuthenticationPrincipal User user) {
+
+        return vehicleDocumentService.getAllDocuments(user);
 
     }
-
-
-
 
 
     // =====================================================
@@ -57,17 +52,11 @@ public class VehicleDocumentController {
     // =====================================================
 
     @GetMapping("/vehicle/{vehicleId}")
-    public List<VehicleDocumentDTO> getByVehicle(
-            @PathVariable UUID vehicleId
-    ) {
+    public List<VehicleDocumentDTO> getByVehicle(@PathVariable UUID vehicleId) {
 
-        return vehicleDocumentService
-                .getDocumentsByVehicleId(vehicleId);
+        return vehicleDocumentService.getDocumentsByVehicleId(vehicleId);
 
     }
-
-
-
 
 
     // =====================================================
@@ -75,21 +64,12 @@ public class VehicleDocumentController {
     // =====================================================
 
     @PostMapping("/upload")
-    public VehicleDocumentDTO upload(
-            @RequestPart("file") MultipartFile file,
-            @ModelAttribute UploadVehicleDocumentRequest request
-    ) {
+    public VehicleDocumentDTO upload(@RequestPart("file") MultipartFile file, @ModelAttribute UploadVehicleDocumentRequest request) {
 
 
-        return vehicleDocumentService.uploadDocument(
-                file,
-                request
-        );
+        return vehicleDocumentService.uploadDocument(file, request);
 
     }
-
-
-
 
 
     // =====================================================
@@ -97,21 +77,12 @@ public class VehicleDocumentController {
     // =====================================================
 
     @PutMapping("/{id}")
-    public VehicleDocumentDTO update(
-            @PathVariable UUID id,
-            @RequestBody UpdateVehicleDocumentRequest request
-    ) {
+    public VehicleDocumentDTO update(@PathVariable UUID id, @RequestBody UpdateVehicleDocumentRequest request) {
 
 
-        return vehicleDocumentService.updateDocument(
-                id,
-                request
-        );
+        return vehicleDocumentService.updateDocument(id, request);
 
     }
-
-
-
 
 
     // =====================================================
@@ -119,16 +90,11 @@ public class VehicleDocumentController {
     // =====================================================
 
     @DeleteMapping("/{id}")
-    public void delete(
-            @PathVariable UUID id
-    ) {
+    public void delete(@PathVariable UUID id) {
 
         vehicleDocumentService.deleteDocument(id);
 
     }
-
-
-
 
 
     // =====================================================
@@ -136,9 +102,7 @@ public class VehicleDocumentController {
     // =====================================================
 
     @GetMapping("/{id}/download")
-    public ResponseEntity<Resource> download(
-            @PathVariable UUID id
-    ) {
+    public ResponseEntity<Resource> download(@PathVariable UUID id) {
 
         return vehicleDocumentService.downloadDocument(id);
 

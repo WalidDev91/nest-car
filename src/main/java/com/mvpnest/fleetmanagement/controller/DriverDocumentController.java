@@ -6,7 +6,6 @@ import com.mvpnest.fleetmanagement.dto.driverdocument.UpdateDriverDocumentReques
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
-import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.service.DriverDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -42,15 +41,10 @@ public class DriverDocumentController {
 
 
     @GetMapping
-    public List<DriverDocumentDTO> getDocuments(@AuthenticationPrincipal User user) {
+    public List<DriverDocumentDTO> getAll(@AuthenticationPrincipal User user) {
 
-        if (user.getRole() == RoleType.SUPER_ADMIN || user.getRole() == RoleType.ADMIN || user.getRole() == RoleType.FLEET_MANAGER) {
+        return driverDocumentService.getAllDocuments(user);
 
-            return driverDocumentService.getAllDocuments();
-
-        }
-
-        return driverDocumentService.getMyDocuments(user.getId());
 
     }
 
@@ -75,8 +69,7 @@ public class DriverDocumentController {
     @GetMapping("/driver/{driverId}")
     public List<DriverDocumentDTO> getByDriver(@PathVariable UUID driverId) {
 
-
-        return driverDocumentService.getMyDocuments(driverId);
+        return driverDocumentService.getDocumentsByDriverId(driverId);
 
     }
 
