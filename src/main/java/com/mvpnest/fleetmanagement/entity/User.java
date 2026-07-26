@@ -1,6 +1,7 @@
 package com.mvpnest.fleetmanagement.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,7 +43,13 @@ public class User extends BaseEntity {
     private RoleType role;
 
     @Column(nullable = false)
+    @Getter(AccessLevel.NONE)
     private boolean isValidate = true;
+
+    @JsonProperty("isValidate")
+    public boolean isValidate() {
+        return isValidate;
+    }
 
     @Column
     private String imageUrl;

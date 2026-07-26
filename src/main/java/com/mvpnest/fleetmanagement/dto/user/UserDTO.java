@@ -1,5 +1,6 @@
 package com.mvpnest.fleetmanagement.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import lombok.*;
 
@@ -25,7 +26,13 @@ public class UserDTO {
 
     private RoleType role;
 
+    @Getter(AccessLevel.NONE)
     private boolean isValidate;
+
+    @JsonProperty("isValidate")
+    public boolean isValidate() {
+        return isValidate;
+    }
 
     private UUID adminId;
 
