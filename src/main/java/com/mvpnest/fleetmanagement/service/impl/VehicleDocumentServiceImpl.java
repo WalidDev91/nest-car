@@ -200,39 +200,36 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
     @Override
     public ResponseEntity<Resource> downloadDocument(UUID id) {
 
-
         try {
-
 
             VehicleDocument document = vehicleDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
+            Path path = Paths.get(uploadDir, "vehicle-documents", document.getFileUrl());
 
-            Path filePath = Paths.get(uploadDir, "vehicle-documents", document.getFileUrl()).normalize();
+            Resource resource = new UrlResource(path.toUri());
 
-
-            Resource resource = new UrlResource(filePath.toUri());
-
-
-            if (!resource.exists() || !resource.isReadable()) {
-
+            if (!resource.exists()) {
                 throw new RuntimeException("File not found");
             }
 
+            // Detect the real file type (PNG, JPG, PDF, ...)
+            String contentType = Files.probeContentType(path);
 
-            return ResponseEntity.ok()
+            if (contentType == null || contentType.isBlank()) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            }
 
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+            // Remove UUID prefix from downloaded filename
+            String storedName = document.getFileUrl();
+            String downloadName = storedName.substring(storedName.indexOf('_') + 1);
 
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-
-                    .body(resource);
-
+            return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + downloadName + "\"").contentType(MediaType.parseMediaType(contentType)).body(resource);
 
         } catch (Exception e) {
 
+            throw new RuntimeException("Download failed: " + e.getMessage(), e);
 
-            throw new RuntimeException("Download failed: " + e.getMessage());
         }
-    }
 
+    }
 }
