@@ -45,42 +45,34 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     @Getter(AccessLevel.NONE)
     private boolean isValidate = true;
-
-    @JsonProperty("isValidate")
-    public boolean isValidate() {
-        return isValidate;
-    }
-
     @Column
     private String imageUrl;
-
-    // ================== ASSOCIATIONS ==================
-
     // 1/ User → User (Admin manages users)
     @ManyToOne
     @JoinColumn(name = "admin_id")
     private User admin;
 
+    // ================== ASSOCIATIONS ==================
     @OneToMany(mappedBy = "admin")
     @JsonIgnore
     private List<User> drivers;
-
     // 2/ User (Admin / Fleet Manager) → Vehicles
     @OneToMany(mappedBy = "admin")
     @JsonIgnore
     private List<Vehicle> vehicles;
-
     // 3/ User (Driver) → Missions
     @OneToMany(mappedBy = "driver")
     @JsonIgnore
     private List<Mission> missions;
-
     // 4/ User (Driver) → DriverDocuments
     @OneToMany(mappedBy = "driver")
     @JsonIgnore
     private List<DriverDocument> driverDocuments;
-
     private String resetToken;
-
     private LocalDateTime resetTokenExpiration;
+
+    @JsonProperty("isValidate")
+    public boolean isValidate() {
+        return isValidate;
+    }
 }

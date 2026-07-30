@@ -1,6 +1,7 @@
 package com.mvpnest.fleetmanagement.controller;
 
 import com.mvpnest.fleetmanagement.dto.user.CreateUserRequest;
+import com.mvpnest.fleetmanagement.dto.user.UpdateSupervisorRequest;
 import com.mvpnest.fleetmanagement.dto.user.UpdateUserRequest;
 import com.mvpnest.fleetmanagement.dto.user.UserDTO;
 import com.mvpnest.fleetmanagement.enums.RoleType;
@@ -185,6 +186,16 @@ public class UserController {
     @DeleteMapping("/{id}/image")
     public UserDTO deleteImage(@PathVariable UUID id) {
         return userService.deleteImage(id);
+    }
+
+
+
+// ==========================================================
+// UPDATE SUPERVISOR
+// ==========================================================
+    @PutMapping("/{id}/supervisor")
+    public UserDTO assignSupervisor(@PathVariable UUID id, @RequestBody UpdateSupervisorRequest request) {
+        return userService.updateSupervisor(id, request);
     }
 
 }

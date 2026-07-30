@@ -1,6 +1,7 @@
 package com.mvpnest.fleetmanagement.service;
 
 import com.mvpnest.fleetmanagement.dto.user.CreateUserRequest;
+import com.mvpnest.fleetmanagement.dto.user.UpdateSupervisorRequest;
 import com.mvpnest.fleetmanagement.dto.user.UpdateUserRequest;
 import com.mvpnest.fleetmanagement.dto.user.UserDTO;
 import com.mvpnest.fleetmanagement.enums.RoleType;
@@ -22,6 +23,8 @@ public interface UserService {
     List<UserDTO> getUsersByAdmin(UUID adminId);
 
     UserDTO updateUser(UUID id, UpdateUserRequest request);
+
+    UserDTO updateSupervisor(UUID userId, UpdateSupervisorRequest request);
 
     void changeRole(UUID id, RoleType role);
 

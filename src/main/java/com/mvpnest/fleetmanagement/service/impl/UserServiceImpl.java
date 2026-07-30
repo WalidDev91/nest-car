@@ -1,6 +1,7 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
 import com.mvpnest.fleetmanagement.dto.user.CreateUserRequest;
+import com.mvpnest.fleetmanagement.dto.user.UpdateSupervisorRequest;
 import com.mvpnest.fleetmanagement.dto.user.UpdateUserRequest;
 import com.mvpnest.fleetmanagement.dto.user.UserDTO;
 import com.mvpnest.fleetmanagement.entity.User;
@@ -8,16 +9,18 @@ import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.mapper.UserMapper;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.service.UserService;
-
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
-
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,9 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
 
+
+    @Value("${app.upload.dir}")
+    private String uploadDir;
 
 
     // ==========================================================
@@ -45,10 +51,7 @@ public class UserServiceImpl implements UserService {
 
         if (request.getAdminId() != null) {
 
-            admin = userRepository.findById(request.getAdminId())
-                    .orElseThrow(() ->
-                            new RuntimeException("Admin not found")
-                    );
+            admin = userRepository.findById(request.getAdminId()).orElseThrow(() -> new RuntimeException("Admin not found"));
         }
 
 
@@ -60,11 +63,7 @@ public class UserServiceImpl implements UserService {
 
                 .email(request.getEmail())
 
-                .password(
-                        passwordEncoder.encode(
-                                request.getPassword()
-                        )
-                )
+                .password(passwordEncoder.encode(request.getPassword()))
 
                 .phone(request.getPhone())
 
@@ -77,13 +76,9 @@ public class UserServiceImpl implements UserService {
                 .build();
 
 
-
-        return userMapper.toDTO(
-                userRepository.save(user)
-        );
+        return userMapper.toDTO(userRepository.save(user));
 
     }
-
 
 
     // ==========================================================
@@ -96,15 +91,12 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findById(id)
 
-                .orElseThrow(() ->
-                        new RuntimeException("User not found")
-                );
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
 
         return userMapper.toDTO(user);
 
     }
-
 
 
     // ==========================================================
@@ -126,7 +118,6 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
     // ==========================================================
     // GET BY ROLE
     // ==========================================================
@@ -146,24 +137,17 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
     // ==========================================================
     // UPDATE USER
     // ==========================================================
 
     @Override
-    public UserDTO updateUser(
-            UUID id,
-            UpdateUserRequest request
-    ) {
+    public UserDTO updateUser(UUID id, UpdateUserRequest request) {
 
 
         User user = userRepository.findById(id)
 
-                .orElseThrow(() ->
-                        new RuntimeException("User not found")
-                );
-
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
 
         User admin = null;
@@ -174,12 +158,9 @@ public class UserServiceImpl implements UserService {
 
             admin = userRepository.findById(request.getAdminId())
 
-                    .orElseThrow(() ->
-                            new RuntimeException("Admin not found")
-                    );
+                    .orElseThrow(() -> new RuntimeException("Admin not found"));
 
         }
-
 
 
         user.setFirstName(request.getFirstName());
@@ -195,13 +176,9 @@ public class UserServiceImpl implements UserService {
         user.setAdmin(admin);
 
 
-
-        return userMapper.toDTO(
-                userRepository.save(user)
-        );
+        return userMapper.toDTO(userRepository.save(user));
 
     }
-
 
 
     // ==========================================================
@@ -209,17 +186,12 @@ public class UserServiceImpl implements UserService {
     // ==========================================================
 
     @Override
-    public void changeRole(
-            UUID id,
-            RoleType role
-    ) {
+    public void changeRole(UUID id, RoleType role) {
 
 
         User user = userRepository.findById(id)
 
-                .orElseThrow(() ->
-                        new RuntimeException("User not found")
-                );
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
 
         user.setRole(role);
@@ -228,7 +200,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
     }
-
 
 
     // ==========================================================
@@ -241,9 +212,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findById(id)
 
-                .orElseThrow(() ->
-                        new RuntimeException("User not found")
-                );
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
 
         user.setValidate(true);
@@ -252,7 +221,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
     }
-
 
 
     // ==========================================================
@@ -265,9 +233,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findById(id)
 
-                .orElseThrow(() ->
-                        new RuntimeException("User not found")
-                );
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
 
         user.setValidate(false);
@@ -276,7 +242,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
     }
-
 
 
     // ==========================================================
@@ -289,9 +254,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findById(id)
 
-                .orElseThrow(() ->
-                        new RuntimeException("User not found")
-                );
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
 
         userRepository.delete(user);
@@ -300,21 +263,79 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO uploadImage(UUID id, MultipartFile file) {
-        throw new UnsupportedOperationException("Not implemented yet");
+
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+
+        try {
+
+            Path folder = Paths.get(uploadDir, "users");
+            Files.createDirectories(folder);
+
+            // Delete old image if it exists
+            if (user.getImageUrl() != null) {
+                Files.deleteIfExists(folder.resolve(user.getImageUrl()));
+            }
+
+            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+
+            Files.copy(file.getInputStream(), folder.resolve(filename));
+
+            user.setImageUrl(filename);
+
+            userRepository.save(user);
+
+            return userMapper.toDTO(user);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Image upload failed");
+        }
     }
 
     @Override
     public UserDTO deleteImage(UUID id) {
-        throw new UnsupportedOperationException("Not implemented yet");
+
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+
+        try {
+
+            if (user.getImageUrl() != null) {
+
+                Path folder = Paths.get(uploadDir, "users");
+
+                Files.deleteIfExists(folder.resolve(user.getImageUrl()));
+
+                user.setImageUrl(null);
+
+                userRepository.save(user);
+            }
+
+            return userMapper.toDTO(user);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Image deletion failed");
+        }
     }
 
     @Override
     public List<UserDTO> getUsersByAdmin(UUID adminId) {
 
-        return userRepository.findByAdminId(adminId)
-                .stream()
-                .map(userMapper::toDTO)
-                .toList();
+        return userRepository.findByAdminId(adminId).stream().map(userMapper::toDTO).toList();
+
+    }
+
+
+    @Override
+    public UserDTO updateSupervisor(UUID userId, UpdateSupervisorRequest request) {
+
+        User user = userRepository.findById(userId).orElseThrow();
+
+        User supervisor = userRepository.findById(request.getAdminId()).orElseThrow();
+
+        user.setAdmin(supervisor);
+
+        userRepository.save(user);
+
+        return userMapper.toDTO(user);
 
     }
 

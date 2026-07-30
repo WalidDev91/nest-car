@@ -1,18 +1,11 @@
 package com.mvpnest.fleetmanagement.controller;
 
-import com.mvpnest.fleetmanagement.dto.auth.AuthResponse;
-import com.mvpnest.fleetmanagement.dto.auth.LoginRequest;
-import com.mvpnest.fleetmanagement.dto.auth.RegisterRequest;
+import com.mvpnest.fleetmanagement.dto.auth.*;
 import com.mvpnest.fleetmanagement.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.mvpnest.fleetmanagement.dto.auth.ForgotPasswordRequest;
-import com.mvpnest.fleetmanagement.dto.auth.ResetPasswordRequest;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,9 +15,11 @@ public class AuthController {
     private final AuthService authService;
 
     // ================== REGISTER ==================
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+    @PostMapping(value = "/register", consumes = "multipart/form-data")
+    public ResponseEntity<AuthResponse> register(@RequestPart("user") RegisterRequest request, @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        return ResponseEntity.ok(authService.register(request, image));
+
     }
 
     // ================== LOGIN ==================
@@ -34,18 +29,14 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(
-            @RequestBody ForgotPasswordRequest request
-    ) {
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request);
         return ResponseEntity.ok("Email sent");
     }
 
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(
-            @RequestBody ResetPasswordRequest request
-    ) {
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.ok("Password updated");
     }

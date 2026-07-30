@@ -21,42 +21,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http
-                .cors(cors -> {})
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(auth -> auth
+        http.cors(cors -> {
+        }).csrf(csrf -> csrf.disable()).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth
 
-                        // Authentication
-                        .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll().
 
-                        // Protected resources
-                        .requestMatchers("/api/users/**").authenticated()
-                        .requestMatchers("/api/vehicles/**").authenticated()
+                // Only images are publicly accessible — documents stay behind auth
+                requestMatchers("/uploads/users/**").permitAll().
+                requestMatchers("/uploads/vehicles/**").permitAll().
 
-                        // Missions
-                        .requestMatchers("/api/missions/**").authenticated()
-
-                        // Documents
-                        .requestMatchers("/api/driver-documents/**").authenticated()
-                        .requestMatchers("/api/vehicle-documents/**").authenticated()
-                        .requestMatchers("/api/mission-documents/**").authenticated()
-
-                        // Everything else
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                requestMatchers("/api/users/**").authenticated().
+                requestMatchers("/api/vehicles/**").authenticated().
+                requestMatchers("/api/missions/**").authenticated().
+                requestMatchers("/api/driver-documents/**").authenticated().
+                requestMatchers("/api/vehicle-documents/**").authenticated().
+                requestMatchers("/api/mission-documents/**").authenticated().
+                anyRequest().authenticated()).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config
-    ) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
