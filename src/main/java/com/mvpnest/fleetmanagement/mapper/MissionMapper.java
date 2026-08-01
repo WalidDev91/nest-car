@@ -13,5 +13,7 @@ public interface MissionMapper {
     @Mapping(target = "vehicleId", expression = "java(mission.getVehicle() != null ? mission.getVehicle().getId() : null)")
     @Mapping(target = "vehiclePlateNumber", expression = "java(mission.getVehicle() != null ? mission.getVehicle().getPlateNumber() : null)")
     @Mapping(source = "vehicleInspection", target = "vehicleInspection")
+    @Mapping(source = "missionDocuments", target = "documents")
     MissionDTO toDTO(Mission mission);
+
 }

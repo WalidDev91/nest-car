@@ -1,10 +1,12 @@
 package com.mvpnest.fleetmanagement.dto.mission;
 
+import com.mvpnest.fleetmanagement.dto.missiondocument.MissionDocumentDTO;
 import com.mvpnest.fleetmanagement.dto.missionvehicleinspection.MissionVehicleInspectionDTO;
 import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -44,4 +46,12 @@ public class MissionDTO {
 
     // inspection
     private MissionVehicleInspectionDTO vehicleInspection;
+
+    // documents verification
+    private boolean documentsVerified;
+
+    private LocalDateTime documentsVerificationDate;
+
+    // mission documents
+    private List<MissionDocumentDTO> documents;
 }

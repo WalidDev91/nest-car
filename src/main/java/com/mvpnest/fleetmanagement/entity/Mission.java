@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,13 +55,21 @@ public class Mission extends BaseEntity {
     // fix: each mission uses one vehicle
 
     // 3️⃣ Mission (1) → MissionDocument (*)
-    @OneToMany(mappedBy = "mission")
+    @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<MissionDocument> missionDocuments;
+    @Builder.Default
+    private List<MissionDocument> missionDocuments = new ArrayList<>();
     // fix: one mission can have multiple mission documents
 
     // 4️⃣ Mission (1) → MissionVehicleInspection (1)
     @OneToOne(mappedBy = "mission", cascade = CascadeType.ALL)
     private MissionVehicleInspection vehicleInspection;
     // fix: each mission has exactly one vehicle inspection
+
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean documentsVerified = false;
+
+    private LocalDateTime documentsVerificationDate;
 }

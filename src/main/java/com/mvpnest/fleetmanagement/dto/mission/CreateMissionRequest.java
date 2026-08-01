@@ -1,5 +1,6 @@
 package com.mvpnest.fleetmanagement.dto.mission;
 
+import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,8 @@ public class CreateMissionRequest {
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
+
+    private MissionStatus status;
 
     private UUID driverId;
 

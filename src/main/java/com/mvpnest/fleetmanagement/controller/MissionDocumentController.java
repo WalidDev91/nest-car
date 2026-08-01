@@ -2,7 +2,6 @@ package com.mvpnest.fleetmanagement.controller;
 
 
 import com.mvpnest.fleetmanagement.dto.missiondocument.MissionDocumentDTO;
-import com.mvpnest.fleetmanagement.dto.missiondocument.UpdateMissionDocumentRequest;
 import com.mvpnest.fleetmanagement.dto.missiondocument.UploadMissionDocumentRequest;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.service.MissionDocumentService;
@@ -79,12 +78,9 @@ public class MissionDocumentController {
     // UPDATE METADATA
     // =====================================================
 
-    @PutMapping("/{id}")
-    public MissionDocumentDTO update(@PathVariable UUID id, @RequestBody UpdateMissionDocumentRequest request) {
-
-
-        return missionDocumentService.updateDocument(id, request);
-
+    @PatchMapping("/{id}")
+    public MissionDocumentDTO updateTitle(@PathVariable UUID id, @RequestParam String title) {
+        return missionDocumentService.updateDocumentTitle(id, title);
     }
 
 

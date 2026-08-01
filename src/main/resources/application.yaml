@@ -11,7 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -38,9 +38,9 @@ spring:
 
 logging:
   level:
-    org.springframework.security: DEBUG
-    org.springframework.mail: DEBUG
-    jakarta.mail: DEBUG
+    org.springframework.security: INFO
+    org.springframework.mail: INFO
+    jakarta.mail: INFO
 
 
 server:

@@ -1,4 +1,4 @@
-package com.mvpnest.fleetmanagement.dto.missionvehicleinspection;
+package com.mvpnest.fleetmanagement.dto.mission;
 
 import lombok.*;
 
@@ -7,12 +7,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UpdateMissionVehicleInspectionRequest {
-
-    private String notes;
+public class MissionInspectionRequest {
 
     private Integer mileage;
 
     private Integer fuelLevel;
+
+    private String notes;
 
 }

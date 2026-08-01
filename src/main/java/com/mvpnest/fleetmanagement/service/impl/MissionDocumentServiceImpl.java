@@ -2,7 +2,6 @@ package com.mvpnest.fleetmanagement.service.impl;
 
 
 import com.mvpnest.fleetmanagement.dto.missiondocument.MissionDocumentDTO;
-import com.mvpnest.fleetmanagement.dto.missiondocument.UpdateMissionDocumentRequest;
 import com.mvpnest.fleetmanagement.dto.missiondocument.UploadMissionDocumentRequest;
 import com.mvpnest.fleetmanagement.entity.Mission;
 import com.mvpnest.fleetmanagement.entity.MissionDocument;
@@ -182,17 +181,13 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     // =====================================================
 
     @Override
-    public MissionDocumentDTO updateDocument(UUID id, UpdateMissionDocumentRequest request) {
-
+    public MissionDocumentDTO updateDocumentTitle(UUID id, String title) {
 
         MissionDocument document = missionDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Mission document not found"));
 
-
-        document.setTitle(request.getTitle());
-
+        document.setTitle(title);
 
         return mapper.toDTO(missionDocumentRepository.save(document));
-
     }
 
 
