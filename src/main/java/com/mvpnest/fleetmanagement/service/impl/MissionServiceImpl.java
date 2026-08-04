@@ -213,6 +213,21 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
+    public MissionDTO deleteInspection(UUID missionId) {
+
+        MissionVehicleInspection inspection = inspectionRepository.findByMissionId(missionId).orElseThrow(() -> new RuntimeException("Inspection not found"));
+
+        Mission mission = inspection.getMission();
+
+        mission.setVehicleInspection(null);
+        inspection.setMission(null);
+
+        missionRepository.save(mission);
+
+        return missionMapper.toDTO(mission);
+    }
+
+    @Override
     public MissionDTO deleteInspectionPhoto(UUID missionId, UUID photoId) {
 
         photoService.deletePhoto(photoId);

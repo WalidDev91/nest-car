@@ -72,6 +72,11 @@ public class MissionController {
         return missionService.uploadInspectionPhoto(id, file, description);
     }
 
+    @DeleteMapping("/{id}/inspection")
+    public MissionDTO deleteInspection(@PathVariable UUID id) {
+        return missionService.deleteInspection(id);
+    }
+
     @DeleteMapping("/{id}/inspection/photos/{photoId}")
     public MissionDTO deleteInspectionPhoto(@PathVariable UUID id, @PathVariable UUID photoId) {
         return missionService.deleteInspectionPhoto(id, photoId);

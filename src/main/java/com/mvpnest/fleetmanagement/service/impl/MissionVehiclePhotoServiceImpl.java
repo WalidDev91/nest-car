@@ -69,8 +69,7 @@ public class MissionVehiclePhotoServiceImpl implements MissionVehiclePhotoServic
             MissionVehicleInspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new RuntimeException("Inspection not found"));
 
 
-            MissionVehiclePhoto photo = MissionVehiclePhoto.builder().photoUrl(filename).description(description).takenAt(LocalDateTime.now()).inspection(inspection).build();
-
+            MissionVehiclePhoto photo = MissionVehiclePhoto.builder().photoUrl("/uploads/mission-vehicle-photos/" + filename).description(description).takenAt(LocalDateTime.now()).inspection(inspection).build();
 
             return mapper.toDTO(photoRepository.save(photo));
 

@@ -62,7 +62,7 @@ public class Mission extends BaseEntity {
     // fix: one mission can have multiple mission documents
 
     // 4️⃣ Mission (1) → MissionVehicleInspection (1)
-    @OneToOne(mappedBy = "mission", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "mission", cascade = CascadeType.ALL, orphanRemoval = true)
     private MissionVehicleInspection vehicleInspection;
     // fix: each mission has exactly one vehicle inspection
 

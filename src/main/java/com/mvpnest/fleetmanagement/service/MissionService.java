@@ -31,5 +31,8 @@ public interface MissionService {
 
     MissionDTO uploadInspectionPhoto(UUID missionId, MultipartFile file, String description);
 
+    MissionDTO deleteInspection(UUID missionId);
+
     MissionDTO deleteInspectionPhoto(UUID missionId, UUID photoId);
+
 }
