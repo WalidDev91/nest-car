@@ -15,16 +15,18 @@ public interface VehicleDocumentService {
 
     VehicleDocumentDTO uploadDocument(MultipartFile file, UploadVehicleDocumentRequest request);
 
-    VehicleDocumentDTO updateDocument(UUID id, UpdateVehicleDocumentRequest request);
-
     VehicleDocumentDTO getDocumentById(UUID id);
 
     List<VehicleDocumentDTO> getAllDocuments(User currentUser);
 
     List<VehicleDocumentDTO> getDocumentsByVehicleId(UUID vehicleId);
 
-    void deleteDocument(UUID id);
-
     ResponseEntity<Resource> downloadDocument(UUID id);
+
+    Resource preview(UUID id);
+
+    VehicleDocumentDTO updateDocument(UUID id, UpdateVehicleDocumentRequest request);
+
+    void deleteDocument(UUID id);
 
 }

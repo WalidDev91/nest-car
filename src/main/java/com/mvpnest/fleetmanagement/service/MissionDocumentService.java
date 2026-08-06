@@ -1,6 +1,7 @@
 package com.mvpnest.fleetmanagement.service;
 
 import com.mvpnest.fleetmanagement.dto.missiondocument.MissionDocumentDTO;
+import com.mvpnest.fleetmanagement.dto.missiondocument.UpdateMissionDocumentRequest;
 import com.mvpnest.fleetmanagement.dto.missiondocument.UploadMissionDocumentRequest;
 import com.mvpnest.fleetmanagement.entity.User;
 import org.springframework.core.io.Resource;
@@ -21,10 +22,14 @@ public interface MissionDocumentService {
 
     MissionDocumentDTO uploadDocument(MultipartFile file, UploadMissionDocumentRequest request);
 
-    MissionDocumentDTO updateDocumentTitle(UUID id, String title);
-
-    void deleteDocument(UUID id);
+    //MissionDocumentDTO updateDocumentTitle(UUID id, String title);
 
     ResponseEntity<Resource> downloadDocument(UUID id);
+
+    Resource preview(UUID id);
+
+    MissionDocumentDTO updateDocument(UUID id, UpdateMissionDocumentRequest request);
+
+    void deleteDocument(UUID id);
 
 }

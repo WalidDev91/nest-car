@@ -3,6 +3,7 @@ package com.mvpnest.fleetmanagement.service.impl;
 
 import com.mvpnest.fleetmanagement.dto.driverdocument.DriverDocumentDTO;
 import com.mvpnest.fleetmanagement.dto.driverdocument.UpdateDriverDocumentRequest;
+import com.mvpnest.fleetmanagement.dto.driverdocument.UpdateDriverDocumentStatusRequest;
 import com.mvpnest.fleetmanagement.entity.DriverDocument;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
@@ -226,23 +227,46 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
 
 
     @Override
-    public DriverDocumentDTO updateStatus(UUID id, DriverDocumentStatus status) {
-
+    public DriverDocumentDTO updateStatus(UUID id, UpdateDriverDocumentStatusRequest request) {
 
         DriverDocument document = driverDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
+        document.setStatus(request.getStatus());
 
-        document.setStatus(status);
-
-
-        if (status == DriverDocumentStatus.APPROVED) {
-
+        if (request.getStatus() == DriverDocumentStatus.PENDING) {
+            document.setValidatedAt(null);
+        } else {
             document.setValidatedAt(LocalDateTime.now());
-
         }
 
+        DriverDocument saved = driverDocumentRepository.save(document);
 
-        return mapper.toDTO(driverDocumentRepository.save(document));
+        return mapper.toDTO(saved);
+
+    }
+
+    @Override
+    public Resource preview(UUID id) {
+
+        try {
+
+            DriverDocument document = driverDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+
+            Path path = Paths.get(uploadDir, "driver-documents", document.getFileUrl());
+
+            Resource resource = new UrlResource(path.toUri());
+
+            if (!resource.exists()) {
+                throw new RuntimeException("File not found");
+            }
+
+            return resource;
+
+        } catch (Exception e) {
+
+            throw new RuntimeException("Preview failed");
+
+        }
 
     }
 

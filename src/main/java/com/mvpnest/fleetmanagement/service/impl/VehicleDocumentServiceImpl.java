@@ -157,43 +157,6 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
 
 
     // =====================================================
-    // UPDATE METADATA
-    // =====================================================
-
-    @Override
-    public VehicleDocumentDTO updateDocument(UUID id, UpdateVehicleDocumentRequest request) {
-
-
-        VehicleDocument document = vehicleDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Vehicle document not found"));
-
-
-        document.setTitle(request.getTitle());
-
-        document.setType(request.getType());
-
-        document.setYear(request.getYear());
-
-
-        return mapper.toDTO(vehicleDocumentRepository.save(document));
-    }
-
-
-    // =====================================================
-    // DELETE
-    // =====================================================
-
-    @Override
-    public void deleteDocument(UUID id) {
-
-
-        VehicleDocument document = vehicleDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Vehicle document not found"));
-
-
-        vehicleDocumentRepository.delete(document);
-    }
-
-
-    // =====================================================
     // DOWNLOAD
     // =====================================================
 
@@ -228,6 +191,55 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
         } catch (Exception e) {
 
             throw new RuntimeException("Download failed: " + e.getMessage(), e);
+
+        }
+
+    }
+
+    @Override
+    public VehicleDocumentDTO updateDocument(UUID id, UpdateVehicleDocumentRequest request) {
+
+        VehicleDocument document = vehicleDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+
+        document.setTitle(request.getTitle());
+        document.setType(request.getType());
+        document.setYear(request.getYear());
+
+        VehicleDocument saved = vehicleDocumentRepository.save(document);
+
+        return mapper.toDTO(saved);
+
+    }
+
+    @Override
+    public void deleteDocument(UUID id) {
+
+        VehicleDocument document = vehicleDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+
+        vehicleDocumentRepository.delete(document);
+
+    }
+
+    @Override
+    public Resource preview(UUID id) {
+
+        try {
+
+            VehicleDocument document = vehicleDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+
+            Path path = Paths.get(uploadDir, "vehicle-documents", document.getFileUrl());
+
+            Resource resource = new UrlResource(path.toUri());
+
+            if (!resource.exists()) {
+                throw new RuntimeException("File not found");
+            }
+
+            return resource;
+
+        } catch (Exception e) {
+
+            throw new RuntimeException("Preview failed");
 
         }
 

@@ -3,6 +3,7 @@ package com.mvpnest.fleetmanagement.service;
 
 import com.mvpnest.fleetmanagement.dto.driverdocument.DriverDocumentDTO;
 import com.mvpnest.fleetmanagement.dto.driverdocument.UpdateDriverDocumentRequest;
+import com.mvpnest.fleetmanagement.dto.driverdocument.UpdateDriverDocumentStatusRequest;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
@@ -30,8 +31,10 @@ public interface DriverDocumentService {
 
     DriverDocumentDTO uploadDocument(MultipartFile file, String title, DriverDocumentType type, UUID driverId);
 
-    ResponseEntity<Resource> downloadDocument(UUID id);
+    DriverDocumentDTO updateStatus(UUID id, UpdateDriverDocumentStatusRequest request);
 
-    DriverDocumentDTO updateStatus(UUID id, DriverDocumentStatus status);
+    Resource preview(UUID id);
+
+    ResponseEntity<Resource> downloadDocument(UUID id);
 
 }

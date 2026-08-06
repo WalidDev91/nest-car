@@ -2,6 +2,7 @@ package com.mvpnest.fleetmanagement.service.impl;
 
 
 import com.mvpnest.fleetmanagement.dto.missiondocument.MissionDocumentDTO;
+import com.mvpnest.fleetmanagement.dto.missiondocument.UpdateMissionDocumentRequest;
 import com.mvpnest.fleetmanagement.dto.missiondocument.UploadMissionDocumentRequest;
 import com.mvpnest.fleetmanagement.entity.Mission;
 import com.mvpnest.fleetmanagement.entity.MissionDocument;
@@ -180,31 +181,15 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     // UPDATE METADATA
     // =====================================================
 
-    @Override
-    public MissionDocumentDTO updateDocumentTitle(UUID id, String title) {
-
-        MissionDocument document = missionDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Mission document not found"));
-
-        document.setTitle(title);
-
-        return mapper.toDTO(missionDocumentRepository.save(document));
-    }
-
-
-    // =====================================================
-    // DELETE
-    // =====================================================
-
-    @Override
-    public void deleteDocument(UUID id) {
-
-
-        MissionDocument document = missionDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Mission document not found"));
-
-
-        missionDocumentRepository.delete(document);
-
-    }
+//    @Override
+//    public MissionDocumentDTO updateDocumentTitle(UUID id, String title) {
+//
+//        MissionDocument document = missionDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Mission document not found"));
+//
+//        document.setTitle(title);
+//
+//        return mapper.toDTO(missionDocumentRepository.save(document));
+//    }
 
 
     // =====================================================
@@ -242,6 +227,53 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
         } catch (Exception e) {
 
             throw new RuntimeException("Download failed: " + e.getMessage(), e);
+
+        }
+
+    }
+
+    @Override
+    public MissionDocumentDTO updateDocument(UUID id, UpdateMissionDocumentRequest request) {
+
+        MissionDocument document = missionDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+
+        document.setTitle(request.getTitle());
+
+        MissionDocument saved = missionDocumentRepository.save(document);
+
+        return mapper.toDTO(saved);
+
+    }
+
+    @Override
+    public void deleteDocument(UUID id) {
+
+        MissionDocument document = missionDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+
+        missionDocumentRepository.delete(document);
+
+    }
+
+    @Override
+    public Resource preview(UUID id) {
+
+        try {
+
+            MissionDocument document = missionDocumentRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+
+            Path path = Paths.get(uploadDir, "mission-documents", document.getFileUrl());
+
+            Resource resource = new UrlResource(path.toUri());
+
+            if (!resource.exists()) {
+                throw new RuntimeException("File not found");
+            }
+
+            return resource;
+
+        } catch (Exception e) {
+
+            throw new RuntimeException("Preview failed");
 
         }
 

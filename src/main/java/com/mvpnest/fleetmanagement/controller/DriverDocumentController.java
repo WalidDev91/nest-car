@@ -3,17 +3,20 @@ package com.mvpnest.fleetmanagement.controller;
 
 import com.mvpnest.fleetmanagement.dto.driverdocument.DriverDocumentDTO;
 import com.mvpnest.fleetmanagement.dto.driverdocument.UpdateDriverDocumentRequest;
+import com.mvpnest.fleetmanagement.dto.driverdocument.UpdateDriverDocumentStatusRequest;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
 import com.mvpnest.fleetmanagement.service.DriverDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 
@@ -127,15 +130,33 @@ public class DriverDocumentController {
     }
 
 
-    // =====================================================
-    // APPROVAL FLOW
-    // =====================================================
-
     @PatchMapping("/{id}/status")
-    public DriverDocumentDTO updateStatus(@PathVariable UUID id, @RequestParam DriverDocumentStatus status) {
+    public ResponseEntity<DriverDocumentDTO> updateStatus(@PathVariable UUID id, @RequestBody UpdateDriverDocumentStatusRequest request) {
 
+        return ResponseEntity.ok(driverDocumentService.updateStatus(id, request));
 
-        return driverDocumentService.updateStatus(id, status);
+    }
+
+    @GetMapping("/{id}/preview")
+    public ResponseEntity<Resource> preview(@PathVariable UUID id) {
+
+        try {
+
+            Resource resource = driverDocumentService.preview(id);
+
+            String contentType = Files.probeContentType(resource.getFile().toPath());
+
+            if (contentType == null) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            }
+
+            return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).body(resource);
+
+        } catch (Exception e) {
+
+            throw new RuntimeException("Preview failed");
+
+        }
 
     }
 
