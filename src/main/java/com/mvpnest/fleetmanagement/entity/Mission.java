@@ -67,9 +67,9 @@ public class Mission extends BaseEntity {
     // fix: each mission has exactly one vehicle inspection
 
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     @Builder.Default
-    private boolean documentsVerified = false;
+    private Boolean documentsVerified = false;
 
     private LocalDateTime documentsVerificationDate;
 }

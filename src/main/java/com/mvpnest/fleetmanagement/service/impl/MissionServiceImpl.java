@@ -180,12 +180,14 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public MissionDTO verifyDocuments(UUID missionId) {
+    public MissionDTO updateDocumentsVerification(UUID missionId, Boolean verified) {
 
-        Mission mission = missionRepository.findById(missionId).orElseThrow(() -> new RuntimeException("Mission not found"));
+        Mission mission = missionRepository.findById(missionId)
+                .orElseThrow(() -> new RuntimeException("Mission not found"));
 
-        mission.setDocumentsVerified(true);
-        mission.setDocumentsVerificationDate(LocalDateTime.now());
+        mission.setDocumentsVerified(verified);
+
+        mission.setDocumentsVerificationDate(verified == null ? null : LocalDateTime.now());
 
         return missionMapper.toDTO(missionRepository.save(mission));
     }

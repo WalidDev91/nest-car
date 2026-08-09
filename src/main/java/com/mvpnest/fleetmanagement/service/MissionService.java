@@ -25,7 +25,7 @@ public interface MissionService {
 
     MissionDTO assignMission(UUID missionId, MissionAssignmentRequest request);
 
-    MissionDTO verifyDocuments(UUID missionId);
+    MissionDTO updateDocumentsVerification(UUID missionId, Boolean verified);
 
     MissionDTO saveInspection(UUID missionId, MissionInspectionRequest request);
 

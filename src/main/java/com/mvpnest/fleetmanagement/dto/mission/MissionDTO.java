@@ -48,7 +48,7 @@ public class MissionDTO {
     private MissionVehicleInspectionDTO vehicleInspection;
 
     // documents verification
-    private boolean documentsVerified;
+    private Boolean documentsVerified;
 
     private LocalDateTime documentsVerificationDate;
 

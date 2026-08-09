@@ -58,8 +58,8 @@ public class MissionController {
     }
 
     @PatchMapping("/{id}/verification")
-    public MissionDTO verifyDocuments(@PathVariable UUID id) {
-        return missionService.verifyDocuments(id);
+    public MissionDTO updateDocumentsVerification(@PathVariable UUID id, @RequestParam(required = false) Boolean verified) {
+        return missionService.updateDocumentsVerification(id, verified);
     }
 
     @PostMapping("/{id}/inspection")
