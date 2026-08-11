@@ -3,7 +3,7 @@ spring:
     name: fleet-management
   servlet:
     multipart:
-      max-file-size: 2MB
+      max-file-size: 5MB
       max-request-size: 100MB
 
   datasource:

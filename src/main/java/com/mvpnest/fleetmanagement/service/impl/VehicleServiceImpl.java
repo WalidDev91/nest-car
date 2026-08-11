@@ -5,9 +5,12 @@ import com.mvpnest.fleetmanagement.dto.vehicle.UpdateVehicleRequest;
 import com.mvpnest.fleetmanagement.dto.vehicle.VehicleDTO;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.entity.Vehicle;
+import com.mvpnest.fleetmanagement.entity.VehiclePhoto;
 import com.mvpnest.fleetmanagement.mapper.VehicleMapper;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
+import com.mvpnest.fleetmanagement.repository.VehiclePhotoRepository;
 import com.mvpnest.fleetmanagement.repository.VehicleRepository;
+import com.mvpnest.fleetmanagement.security.SecurityUtils;
 import com.mvpnest.fleetmanagement.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +32,7 @@ public class VehicleServiceImpl implements VehicleService {
     private final VehicleRepository vehicleRepository;
     private final UserRepository userRepository;
     private final VehicleMapper vehicleMapper;
+    private final VehiclePhotoRepository vehiclePhotoRepository;
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -36,11 +40,18 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleDTO createVehicle(CreateVehicleRequest request) {
 
-        User admin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User creator = SecurityUtils.getCurrentUser();
 
-        Vehicle vehicle = Vehicle.builder().plateNumber(request.getPlateNumber()).brand(request.getBrand()).model(request.getModel()).year(request.getYear()).admin(admin).build();
+        Vehicle vehicle = Vehicle.builder()
+                .plateNumber(request.getPlateNumber())
+                .brand(request.getBrand())
+                .model(request.getModel())
+                .year(request.getYear())
+                .admin(creator)
+                .build();
 
         return vehicleMapper.toDTO(vehicleRepository.save(vehicle));
+
     }
 
     @Override
@@ -87,7 +98,7 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
-    public VehicleDTO uploadImage(UUID id, MultipartFile file) {
+    public VehicleDTO uploadPhoto(UUID id, MultipartFile file, String description) {
 
         Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
@@ -96,51 +107,44 @@ public class VehicleServiceImpl implements VehicleService {
             Path folder = Paths.get(uploadDir, "vehicles");
             Files.createDirectories(folder);
 
-            // Delete old image if it exists
-            if (vehicle.getImageUrl() != null) {
-                Files.deleteIfExists(folder.resolve(vehicle.getImageUrl()));
-            }
-
             String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
             Files.copy(file.getInputStream(), folder.resolve(filename));
 
-            vehicle.setImageUrl(filename);
+            VehiclePhoto photo = VehiclePhoto.builder().photoUrl(filename).description(description).vehicle(vehicle).build();
 
-            vehicleRepository.save(vehicle);
+            vehiclePhotoRepository.save(photo);
 
             return vehicleMapper.toDTO(vehicle);
 
         } catch (IOException e) {
-            throw new RuntimeException("Image upload failed");
+            throw new RuntimeException("Photo upload failed");
         }
-
     }
 
     @Override
-    public VehicleDTO deleteImage(UUID id) {
+    public VehicleDTO deletePhoto(UUID id, UUID photoId) {
 
         Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
+        VehiclePhoto photo = vehiclePhotoRepository.findById(photoId).orElseThrow(() -> new RuntimeException("Vehicle photo not found"));
+
+        if (!photo.getVehicle().getId().equals(vehicle.getId())) {
+            throw new RuntimeException("Photo does not belong to this vehicle");
+        }
+
         try {
 
-            if (vehicle.getImageUrl() != null) {
+            Path folder = Paths.get(uploadDir, "vehicles");
 
-                Path folder = Paths.get(uploadDir, "vehicles");
+            Files.deleteIfExists(folder.resolve(photo.getPhotoUrl()));
 
-                Files.deleteIfExists(folder.resolve(vehicle.getImageUrl()));
-
-                vehicle.setImageUrl(null);
-
-                vehicleRepository.save(vehicle);
-
-            }
+            vehiclePhotoRepository.delete(photo);
 
             return vehicleMapper.toDTO(vehicle);
 
         } catch (IOException e) {
-            throw new RuntimeException("Image deletion failed");
+            throw new RuntimeException("Photo deletion failed");
         }
-
     }
 }

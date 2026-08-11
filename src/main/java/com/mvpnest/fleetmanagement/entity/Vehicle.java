@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,8 +34,8 @@ public class Vehicle extends BaseEntity {
     @Column(nullable = false)
     private Integer year;
 
-    @Column
-    private String imageUrl;
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<VehiclePhoto> photos = new ArrayList<>();
 
     // ================== ASSOCIATIONS ==================
 

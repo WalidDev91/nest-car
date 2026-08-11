@@ -3,6 +3,7 @@ package com.mvpnest.fleetmanagement.dto.vehicle;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -29,5 +30,5 @@ public class VehicleDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private String imageUrl;
+    private List<VehiclePhotoDTO> photos;
 }

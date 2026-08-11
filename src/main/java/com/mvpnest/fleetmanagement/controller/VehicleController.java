@@ -1,8 +1,8 @@
 package com.mvpnest.fleetmanagement.controller;
 
-import com.mvpnest.fleetmanagement.dto.vehicle.VehicleDTO;
 import com.mvpnest.fleetmanagement.dto.vehicle.CreateVehicleRequest;
 import com.mvpnest.fleetmanagement.dto.vehicle.UpdateVehicleRequest;
+import com.mvpnest.fleetmanagement.dto.vehicle.VehicleDTO;
 import com.mvpnest.fleetmanagement.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -48,9 +48,7 @@ public class VehicleController {
     // ==========================================================
 
     @GetMapping
-    public List<VehicleDTO> getAll(
-            @RequestParam(required = false) UUID adminId
-    ) {
+    public List<VehicleDTO> getAll(@RequestParam(required = false) UUID adminId) {
 
         if (adminId != null) {
 
@@ -68,10 +66,7 @@ public class VehicleController {
     // ==========================================================
 
     @PutMapping("/{id}")
-    public VehicleDTO update(
-            @PathVariable UUID id,
-            @RequestBody UpdateVehicleRequest request
-    ) {
+    public VehicleDTO update(@PathVariable UUID id, @RequestBody UpdateVehicleRequest request) {
 
         return vehicleService.updateVehicle(id, request);
 
@@ -91,29 +86,22 @@ public class VehicleController {
 
 
     // ==========================================================
-    // UPLOAD IMAGE
+    // UPLOAD VEHICLE PHOTO
     // ==========================================================
 
-    @PostMapping("/{id}/image")
-    public VehicleDTO uploadImage(
-            @PathVariable UUID id,
-            @RequestParam("file") MultipartFile file
-    ) {
-
-        return vehicleService.uploadImage(id, file);
-
+    @PostMapping("/{id}/photos")
+    public VehicleDTO uploadPhoto(@PathVariable UUID id, @RequestParam("file") MultipartFile file, @RequestParam(required = false) String description) {
+        return vehicleService.uploadPhoto(id, file, description);
     }
 
 
     // ==========================================================
-    // DELETE IMAGE
+    // DELETE VEHICLE PHOTO
     // ==========================================================
 
-    @DeleteMapping("/{id}/image")
-    public VehicleDTO deleteImage(@PathVariable UUID id) {
-
-        return vehicleService.deleteImage(id);
-
+    @DeleteMapping("/{id}/photos/{photoId}")
+    public VehicleDTO deletePhoto(@PathVariable UUID id, @PathVariable UUID photoId) {
+        return vehicleService.deletePhoto(id, photoId);
     }
 
 }

@@ -22,7 +22,7 @@ public interface VehicleService {
 
     List<VehicleDTO> getVehiclesByAdmin(UUID adminId);
 
-    VehicleDTO uploadImage(UUID id, MultipartFile file);
+    VehicleDTO uploadPhoto(UUID id, MultipartFile file, String description);
 
-    VehicleDTO deleteImage(UUID id);
+    VehicleDTO deletePhoto(UUID id, UUID photoId);
 }

@@ -70,24 +70,37 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
 
             case SUPER_ADMIN -> documents = vehicleDocumentRepository.findAll();
 
-            case ADMIN -> {
+            case ADMIN -> documents = vehicleDocumentRepository.findAll().stream()
+                    .filter(doc -> {
 
-                documents = vehicleDocumentRepository.findAll().stream().filter(doc -> doc.getVehicle().getAdmin().getId().equals(currentUser.getId())).toList();
+                        if (doc.getVehicle() == null || doc.getVehicle().getAdmin() == null) return false;
 
-            }
+                        User creator = doc.getVehicle().getAdmin();
 
-            case FLEET_MANAGER -> {
+                        // Admin sees their own vehicles, plus any created by a
+                        // Fleet Manager who reports to them.
+                        return creator.getId().equals(currentUser.getId())
+                                || (creator.getAdmin() != null && creator.getAdmin().getId().equals(currentUser.getId()));
 
-                documents = vehicleDocumentRepository.findAll().stream().filter(doc -> doc.getVehicle().getAdmin().getId().equals(currentUser.getAdmin().getId())).toList();
+                    })
+                    .toList();
 
-            }
+            case FLEET_MANAGER -> documents = vehicleDocumentRepository.findAll().stream()
+                    .filter(doc -> doc.getVehicle() != null
+                            && doc.getVehicle().getAdmin() != null
+                            && doc.getVehicle().getAdmin().getId().equals(currentUser.getId()))
+                    .toList();
 
             case DRIVER -> {
 
-                User driver = userRepository.findById(currentUser.getId()).orElseThrow(() -> new RuntimeException("Driver not found"));
+                List<UUID> vehicleIds = currentUser.getMissions().stream()
+                        .filter(m -> m.getVehicle() != null)
+                        .map(m -> m.getVehicle().getId())
+                        .distinct().toList();
 
-                List<UUID> vehicleIds = driver.getMissions().stream().filter(m -> m.getVehicle() != null).map(m -> m.getVehicle().getId()).distinct().toList();
-                documents = vehicleDocumentRepository.findAll().stream().filter(doc -> vehicleIds.contains(doc.getVehicle().getId())).toList();
+                documents = vehicleDocumentRepository.findAll().stream()
+                        .filter(doc -> doc.getVehicle() != null && vehicleIds.contains(doc.getVehicle().getId()))
+                        .toList();
 
             }
 
@@ -124,30 +137,21 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
                 throw new RuntimeException("File is empty");
             }
 
-
             Vehicle vehicle = vehicleRepository.findById(request.getVehicleId()).orElseThrow(() -> new RuntimeException("Vehicle not found"));
-
 
             Path uploadPath = Paths.get(uploadDir, "vehicle-documents");
 
-
             Files.createDirectories(uploadPath);
-
 
             String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
-
             Path filePath = uploadPath.resolve(filename);
-
 
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-
             VehicleDocument document = VehicleDocument.builder().title(request.getTitle()).type(request.getType()).year(request.getYear()).fileUrl(filename).vehicle(vehicle).build();
 
-
             return mapper.toDTO(vehicleDocumentRepository.save(document));
-
 
         } catch (IOException e) {
 
