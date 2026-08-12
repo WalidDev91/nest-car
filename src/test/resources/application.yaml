@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fleetdb
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+  sql:
+    init:
+      mode: never
+
+  mail:
+    host: localhost
+    port: 25
+    username: test@example.com
+    password: test-password
+
+app:
+  upload:
+    dir: uploads
+    base-url: http://localhost:8080

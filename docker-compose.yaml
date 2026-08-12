@@ -1,0 +1,33 @@
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: fleet-postgres
+    environment:
+      POSTGRES_DB: fleetdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fleet-backend
+    depends_on:
+      - postgres
+    environment:
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fleetdb
+      APP_UPLOAD_DIR: /app/uploads
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+
+volumes:
+  postgres-data:
