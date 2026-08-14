@@ -14,6 +14,14 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh './mvnw verify sonar:sonar -Dsonar.projectKey=fleet-management-backend -Dsonar.projectName=fleet-management-backend'
+                }
+            }
+        }
+
         stage('Package') {
             steps {
                 sh './mvnw package -DskipTests'
