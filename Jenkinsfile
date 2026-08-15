@@ -51,12 +51,19 @@ pipeline {
                     usernameVariable: 'GHCR_USERNAME',
                     passwordVariable: 'GHCR_TOKEN'
                 )]) {
-                    sh '''
-                        echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
-                        docker push ghcr.io/waliddev91/fleet-management-backend:build-${BUILD_NUMBER}
-                        docker push ghcr.io/waliddev91/fleet-management-backend:latest
-                        docker logout ghcr.io
-                    '''
+                    retry(3) {
+                        sh '''
+                            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+                            docker push ghcr.io/waliddev91/fleet-management-backend:build-${BUILD_NUMBER}
+                        '''
+                    }
+                    retry(3) {
+                        sh '''
+                            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+                            docker push ghcr.io/waliddev91/fleet-management-backend:latest
+                        '''
+                    }
+                    sh 'docker logout ghcr.io'
                 }
             }
         }
