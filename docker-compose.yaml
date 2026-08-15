@@ -17,6 +17,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
 
   backend:
+    image: ghcr.io/waliddev91/fleet-management-backend:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -37,6 +38,7 @@ services:
       - ./uploads:/app/uploads
 
   frontend:
+    image: ghcr.io/waliddev91/fleet-management-frontend:latest
     build:
       context: ../fleet-management-ui
       dockerfile: Dockerfile
