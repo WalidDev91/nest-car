@@ -7,6 +7,7 @@ import com.mvpnest.fleetmanagement.security.JwtAuthenticationFilter;
 import com.mvpnest.fleetmanagement.service.AuthService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = AuthController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
 
     @Autowired
@@ -29,8 +31,6 @@ class AuthControllerTest {
     @MockitoBean
     private AuthService authService;
 
-    // MockMvc still loads security config, so the JWT filter needs to exist
-    // as a bean even though this test never sends a token.
     @MockitoBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -49,7 +49,5 @@ class AuthControllerTest {
         when(authService.login(any(LoginRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request))).andExpect(status().isOk()).andExpect(jsonPath("$.token").value("fake-jwt-token")).andExpect(jsonPath("$.email").value("driver@example.com"));
-
     }
-
 }
