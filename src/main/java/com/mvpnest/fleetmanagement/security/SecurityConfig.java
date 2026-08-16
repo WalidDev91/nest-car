@@ -24,10 +24,11 @@ public class SecurityConfig {
         http.cors(cors -> {
         }).csrf(csrf -> csrf.disable()).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth
 
-                .requestMatchers("/api/auth/**").permitAll().
+                .requestMatchers("/actuator/prometheus").permitAll().
+                requestMatchers("/api/auth/**").permitAll().
 
                 // Only images are publicly accessible — documents stay behind auth
-                requestMatchers("/uploads/users/**").permitAll().
+                        requestMatchers("/uploads/users/**").permitAll().
                 requestMatchers("/uploads/vehicles/**").permitAll().
                 requestMatchers("/uploads/mission-vehicle-photos/**").permitAll().
 
