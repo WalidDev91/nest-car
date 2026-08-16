@@ -7,6 +7,7 @@ import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.entity.Vehicle;
 import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import com.mvpnest.fleetmanagement.enums.RoleType;
+import com.mvpnest.fleetmanagement.exception.ResourceNotFoundException;
 import com.mvpnest.fleetmanagement.mapper.MissionMapper;
 import com.mvpnest.fleetmanagement.repository.MissionRepository;
 import com.mvpnest.fleetmanagement.repository.MissionVehicleInspectionRepository;
@@ -132,9 +133,10 @@ public class MissionServiceImpl implements MissionService {
     @Override
     public void deleteMission(UUID id) {
 
-        Mission mission = missionRepository.findById(id).orElseThrow(() -> new RuntimeException("Mission not found"));
+        Mission mission = missionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Mission not found"));
 
         missionRepository.delete(mission);
+
     }
 
     @Override
@@ -182,8 +184,7 @@ public class MissionServiceImpl implements MissionService {
     @Override
     public MissionDTO updateDocumentsVerification(UUID missionId, Boolean verified) {
 
-        Mission mission = missionRepository.findById(missionId)
-                .orElseThrow(() -> new RuntimeException("Mission not found"));
+        Mission mission = missionRepository.findById(missionId).orElseThrow(() -> new RuntimeException("Mission not found"));
 
         mission.setDocumentsVerified(verified);
 

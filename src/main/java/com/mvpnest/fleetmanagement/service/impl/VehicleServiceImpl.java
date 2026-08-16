@@ -6,6 +6,7 @@ import com.mvpnest.fleetmanagement.dto.vehicle.VehicleDTO;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.entity.Vehicle;
 import com.mvpnest.fleetmanagement.entity.VehiclePhoto;
+import com.mvpnest.fleetmanagement.exception.ResourceNotFoundException;
 import com.mvpnest.fleetmanagement.mapper.VehicleMapper;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.repository.VehiclePhotoRepository;
@@ -42,13 +43,7 @@ public class VehicleServiceImpl implements VehicleService {
 
         User creator = SecurityUtils.getCurrentUser();
 
-        Vehicle vehicle = Vehicle.builder()
-                .plateNumber(request.getPlateNumber())
-                .brand(request.getBrand())
-                .model(request.getModel())
-                .year(request.getYear())
-                .admin(creator)
-                .build();
+        Vehicle vehicle = Vehicle.builder().plateNumber(request.getPlateNumber()).brand(request.getBrand()).model(request.getModel()).year(request.getYear()).admin(creator).build();
 
         return vehicleMapper.toDTO(vehicleRepository.save(vehicle));
 
@@ -57,9 +52,10 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleDTO getVehicleById(UUID id) {
 
-        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new RuntimeException("Vehicle not found"));
+        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Vehicle not found"));
 
         return vehicleMapper.toDTO(vehicle);
+
     }
 
     @Override

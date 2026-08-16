@@ -3,6 +3,8 @@ package com.mvpnest.fleetmanagement.service.impl;
 import com.mvpnest.fleetmanagement.dto.auth.*;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.enums.RoleType;
+import com.mvpnest.fleetmanagement.exception.InvalidCredentialsException;
+import com.mvpnest.fleetmanagement.exception.ResourceNotFoundException;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.security.JwtService;
 import com.mvpnest.fleetmanagement.service.AuthService;
@@ -32,19 +34,19 @@ public class AuthServiceImpl implements AuthService {
     @Value("${app.upload.dir}")
     private String uploadDir;
 
-    // ================== LOGIN ==================
     @Override
     public AuthResponse login(LoginRequest request) {
 
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid password");
+            throw new InvalidCredentialsException("Invalid password");
         }
 
         String token = jwtService.generateToken(user.getEmail());
 
         return AuthResponse.builder().id(user.getId()).token(token).email(user.getEmail()).phone(user.getPhone()).role(user.getRole().name()).firstName(user.getFirstName()).lastName(user.getLastName()).imageUrl(user.getImageUrl()).build();
+
     }
 
     @Override
