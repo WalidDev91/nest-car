@@ -30,11 +30,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class VehicleServiceImpl implements VehicleService {
 
+    private static final String VEHICLE_NOT_FOUND = "Vehicle not found";
     private final VehicleRepository vehicleRepository;
     private final UserRepository userRepository;
     private final VehicleMapper vehicleMapper;
     private final VehiclePhotoRepository vehiclePhotoRepository;
-
     @Value("${app.upload.dir}")
     private String uploadDir;
 
@@ -52,7 +52,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleDTO getVehicleById(UUID id) {
 
-        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Vehicle not found"));
+        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(VEHICLE_NOT_FOUND));
 
         return vehicleMapper.toDTO(vehicle);
 
@@ -72,7 +72,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleDTO updateVehicle(UUID id, UpdateVehicleRequest request) {
 
-        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new RuntimeException("Vehicle not found"));
+        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new RuntimeException(VEHICLE_NOT_FOUND));
 
         User admin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -88,7 +88,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public void deleteVehicle(UUID id) {
 
-        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new RuntimeException("Vehicle not found"));
+        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new RuntimeException(VEHICLE_NOT_FOUND));
 
         vehicleRepository.delete(vehicle);
     }
@@ -96,7 +96,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleDTO uploadPhoto(UUID id, MultipartFile file, String description) {
 
-        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new RuntimeException("Vehicle not found"));
+        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new RuntimeException(VEHICLE_NOT_FOUND));
 
         try {
 
@@ -121,7 +121,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleDTO deletePhoto(UUID id, UUID photoId) {
 
-        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new RuntimeException("Vehicle not found"));
+        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow(() -> new RuntimeException(VEHICLE_NOT_FOUND));
 
         VehiclePhoto photo = vehiclePhotoRepository.findById(photoId).orElseThrow(() -> new RuntimeException("Vehicle photo not found"));
 
