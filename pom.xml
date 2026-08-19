@@ -32,11 +32,11 @@
 		<nexus.url>http://localhost:8081</nexus.url>
 	</properties>
 	<distributionManagement>
-		<repository>
-			<id>nexus-releases</id>
-			<name>Fleet Management Maven Releases</name>
-			<url>${nexus.url}/repository/fleet-management-maven-releases/</url>
-		</repository>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<name>Fleet Management Maven Snapshots</name>
+			<url>${nexus.url}/repository/fleet-management-maven-snapshots/</url>
+		</snapshotRepository>
 	</distributionManagement>
 	<dependencies>
 		<dependency>
