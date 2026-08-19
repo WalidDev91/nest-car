@@ -29,7 +29,15 @@
 	<properties>
 		<java.version>21</java.version>
 		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<nexus.url>http://localhost:8081</nexus.url>
 	</properties>
+	<distributionManagement>
+		<repository>
+			<id>nexus-releases</id>
+			<name>Fleet Management Maven Releases</name>
+			<url>${nexus.url}/repository/fleet-management-maven-releases/</url>
+		</repository>
+	</distributionManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -61,6 +61,28 @@ services:
     ports:
       - "4200:80"
 
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    restart: unless-stopped
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-extensions:/opt/sonarqube/extensions
+      - sonarqube-logs:/opt/sonarqube/logs
+    ports:
+      - "9000:9000"
+
+  nexus:
+    image: sonatype/nexus3:latest
+    container_name: nexus
+    restart: unless-stopped
+    volumes:
+      - nexus-data:/nexus-data
+    ports:
+      - "8081:8081"
+
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: fleet-cadvisor
@@ -103,3 +125,19 @@ volumes:
   postgres-data:
   prometheus-data:
   grafana-data:
+
+  sonarqube-data:
+    external: true
+    name: sonarqube_sonarqube-data
+
+  sonarqube-extensions:
+    external: true
+    name: sonarqube_sonarqube-extensions
+
+  sonarqube-logs:
+    external: true
+    name: sonarqube_sonarqube-logs
+
+  nexus-data:
+    external: true
+    name: nexus-data

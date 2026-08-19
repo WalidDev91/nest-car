@@ -36,6 +36,19 @@ pipeline {
             }
         }
 
+        stage('Publish to Nexus') {
+            steps {
+                configFileProvider([
+                    configFile(
+                        fileId: 'nexus-maven-settings',
+                        variable: 'MAVEN_SETTINGS'
+                    )
+                ]) {
+                    sh './mvnw deploy -DskipTests -s "$MAVEN_SETTINGS"'
+                }
+            }
+        }
+
         stage('Docker Build') {
             steps {
                 sh 'docker build -t fleet-management-backend:latest .'
