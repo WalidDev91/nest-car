@@ -14,11 +14,13 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
 
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowCredentials(true);
-        // config.setAllowedOrigins(List.of("http://localhost:4200"));
         // Hosting
-        config.setAllowedOrigins(List.of("http://localhost:4200", "http://20.215.208.30"));
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:4200",
+                "http://nest-car.duckdns.org",
+                "https://nest-car.duckdns.org"
+        ));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

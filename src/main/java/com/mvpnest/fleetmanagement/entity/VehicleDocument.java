@@ -1,6 +1,6 @@
 package com.mvpnest.fleetmanagement.entity;
 
-import com.mvpnest.fleetmanagement.enums.VehicleType;
+import com.mvpnest.fleetmanagement.enums.VehicleDocumentType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,7 +25,7 @@ public class VehicleDocument extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private VehicleType type;
+    private VehicleDocumentType type;
 
     @Column(nullable = false)
     private String fileUrl;

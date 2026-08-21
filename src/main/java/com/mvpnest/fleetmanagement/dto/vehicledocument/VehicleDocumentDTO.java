@@ -1,6 +1,6 @@
 package com.mvpnest.fleetmanagement.dto.vehicledocument;
 
-import com.mvpnest.fleetmanagement.enums.VehicleType;
+import com.mvpnest.fleetmanagement.enums.VehicleDocumentType;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -17,7 +17,7 @@ public class VehicleDocumentDTO {
 
     private String title;
 
-    private VehicleType type;
+    private VehicleDocumentType type;
 
     private String fileUrl;
 

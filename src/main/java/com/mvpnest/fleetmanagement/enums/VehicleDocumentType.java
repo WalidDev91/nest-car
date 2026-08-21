@@ -1,7 +1,9 @@
 package com.mvpnest.fleetmanagement.enums;
 
-public enum VehicleType {
+public enum VehicleDocumentType {
     LICENSE,
     TECHNICAL_CHECK,
-    INSURANCE
+    INSURANCE,
+    VEHICLE_TAX,
+    OTHERS
 }

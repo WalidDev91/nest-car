@@ -1,6 +1,6 @@
 package com.mvpnest.fleetmanagement.dto.vehicledocument;
 
-import com.mvpnest.fleetmanagement.enums.VehicleType;
+import com.mvpnest.fleetmanagement.enums.VehicleDocumentType;
 import lombok.*;
 
 @Getter
@@ -12,7 +12,7 @@ public class UpdateVehicleDocumentRequest {
 
     private String title;
 
-    private VehicleType type;
+    private VehicleDocumentType type;
 
     private Integer year;
 
