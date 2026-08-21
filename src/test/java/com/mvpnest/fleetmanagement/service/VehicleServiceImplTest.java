@@ -12,11 +12,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,6 +63,37 @@ class VehicleServiceImplTest {
 
         assertThatThrownBy(() -> vehicleService.getVehicleById(id)).isInstanceOf(ResourceNotFoundException.class).hasMessage("Vehicle not found");
 
+    }
+
+    @Test
+    void getAllVehicles_returnsMappedVehicles() {
+
+        Vehicle vehicle = Vehicle.builder().id(UUID.randomUUID()).plateNumber("123 TUN 456").brand("Mercedes").model("Actros").year(2022).build();
+
+        VehicleDTO dto = new VehicleDTO();
+        dto.setPlateNumber("123 TUN 456");
+
+        when(vehicleRepository.findAll()).thenReturn(List.of(vehicle));
+        when(vehicleMapper.toDTO(vehicle)).thenReturn(dto);
+
+        List<VehicleDTO> result = vehicleService.getAllVehicles();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getPlateNumber()).isEqualTo("123 TUN 456");
+    }
+
+    @Test
+    void deleteVehicle_whenVehicleExists_deletesIt() {
+
+        UUID id = UUID.randomUUID();
+
+        Vehicle vehicle = Vehicle.builder().id(id).plateNumber("123 TUN 456").build();
+
+        when(vehicleRepository.findById(id)).thenReturn(Optional.of(vehicle));
+
+        vehicleService.deleteVehicle(id);
+
+        verify(vehicleRepository).delete(vehicle);
     }
 
 }
