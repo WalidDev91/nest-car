@@ -28,7 +28,7 @@ public class SecurityConfig {
                 requestMatchers("/api/auth/**").permitAll().
 
                 // Only images are publicly accessible — documents stay behind auth
-                        requestMatchers("/uploads/users/**").permitAll().
+                requestMatchers("/uploads/users/**").permitAll().
                 requestMatchers("/uploads/vehicles/**").permitAll().
                 requestMatchers("/uploads/mission-vehicle-photos/**").permitAll().
 
