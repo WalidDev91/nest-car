@@ -74,7 +74,8 @@ public class Mission extends BaseEntity {
 
 
     @Column(nullable = true)
-    private Boolean documentsVerified;
+    @Builder.Default
+    private Boolean documentsVerified = false;
 
     private LocalDateTime documentsVerificationDate;
 }
