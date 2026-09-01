@@ -52,6 +52,16 @@ public class MissionController {
         return missionService.getMissionsByStatus(status);
     }
 
+    @GetMapping("/departure/{departureLocation}")
+    public List<MissionDTO> getByDeparture(@PathVariable String departureLocation) {
+        return missionService.getMissionsByDepartureLocation(departureLocation);
+    }
+
+    @GetMapping("/destination/{destinationLocation}")
+    public List<MissionDTO> getByDestination(@PathVariable String destinationLocation) {
+        return missionService.getMissionsByDestinationLocation(destinationLocation);
+    }
+
     @PatchMapping("/{id}/assignment")
     public MissionDTO assignMission(@PathVariable UUID id, @RequestBody MissionAssignmentRequest request) {
         return missionService.assignMission(id, request);

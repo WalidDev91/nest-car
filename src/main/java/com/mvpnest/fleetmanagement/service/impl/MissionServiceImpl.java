@@ -62,7 +62,7 @@ public class MissionServiceImpl implements MissionService {
         }
 
 
-        Mission mission = Mission.builder().title(request.getTitle()).description(request.getDescription()).startDate(request.getStartDate()).endDate(request.getEndDate()).status(request.getStatus() != null ? request.getStatus() : MissionStatus.PLANNED).driver(driver).vehicle(vehicle).build();
+        Mission mission = Mission.builder().title(request.getTitle()).description(request.getDescription()).departureLocation(request.getDepartureLocation()).destinationLocation(request.getDestinationLocation()).startDate(request.getStartDate()).endDate(request.getEndDate()).status(request.getStatus() != null ? request.getStatus() : MissionStatus.PLANNED).driver(driver).vehicle(vehicle).build();
 
 
         return missionMapper.toDTO(missionRepository.save(mission));
@@ -120,6 +120,8 @@ public class MissionServiceImpl implements MissionService {
 
         mission.setTitle(request.getTitle());
         mission.setDescription(request.getDescription());
+        mission.setDepartureLocation(request.getDepartureLocation());
+        mission.setDestinationLocation(request.getDestinationLocation());
         mission.setStartDate(request.getStartDate());
         mission.setEndDate(request.getEndDate());
         if (request.getStatus() != null) {
@@ -128,6 +130,18 @@ public class MissionServiceImpl implements MissionService {
 
 
         return missionMapper.toDTO(missionRepository.save(mission));
+    }
+
+    @Override
+    public List<MissionDTO> getMissionsByDepartureLocation(String departureLocation) {
+
+        return missionRepository.findByDepartureLocation(departureLocation).stream().map(missionMapper::toDTO).toList();
+    }
+
+    @Override
+    public List<MissionDTO> getMissionsByDestinationLocation(String destinationLocation) {
+
+        return missionRepository.findByDestinationLocation(destinationLocation).stream().map(missionMapper::toDTO).toList();
     }
 
     @Override

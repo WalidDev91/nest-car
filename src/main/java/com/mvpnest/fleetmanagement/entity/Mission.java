@@ -30,6 +30,12 @@ public class Mission extends BaseEntity {
     @Column(length = 1000)
     private String description;
 
+    @Column(name = "departure_location", nullable = false)
+    private String departureLocation;
+
+    @Column(name = "destination_location", nullable = false)
+    private String destinationLocation;
+
     @Column(nullable = false)
     private LocalDateTime startDate;
 
@@ -68,8 +74,7 @@ public class Mission extends BaseEntity {
 
 
     @Column(nullable = true)
-    @Builder.Default
-    private Boolean documentsVerified = false;
+    private Boolean documentsVerified;
 
     private LocalDateTime documentsVerificationDate;
 }

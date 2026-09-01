@@ -17,4 +17,8 @@ public interface MissionRepository extends JpaRepository<Mission, UUID> {
 
     List<Mission> findByVehicleId(UUID vehicleId);
 
+    List<Mission> findByDepartureLocation(String departureLocation);
+
+    List<Mission> findByDestinationLocation(String destinationLocation);
+
 }

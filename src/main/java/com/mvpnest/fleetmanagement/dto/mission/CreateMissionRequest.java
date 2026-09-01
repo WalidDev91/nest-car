@@ -17,6 +17,10 @@ public class CreateMissionRequest {
 
     private String description;
 
+    private String departureLocation;
+
+    private String destinationLocation;
+
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;

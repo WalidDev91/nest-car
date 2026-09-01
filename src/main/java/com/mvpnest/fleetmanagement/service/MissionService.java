@@ -23,6 +23,10 @@ public interface MissionService {
 
     List<MissionDTO> getMissionsByStatus(MissionStatus status);
 
+    List<MissionDTO> getMissionsByDepartureLocation(String departureLocation);
+
+    List<MissionDTO> getMissionsByDestinationLocation(String destinationLocation);
+
     MissionDTO assignMission(UUID missionId, MissionAssignmentRequest request);
 
     MissionDTO updateDocumentsVerification(UUID missionId, Boolean verified);

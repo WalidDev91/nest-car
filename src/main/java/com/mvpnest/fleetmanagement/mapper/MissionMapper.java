@@ -12,6 +12,8 @@ public interface MissionMapper {
     @Mapping(target = "driverName", expression = "java(mission.getDriver() != null ? mission.getDriver().getFirstName() + \" \" + mission.getDriver().getLastName() : null)")
     @Mapping(target = "vehicleId", expression = "java(mission.getVehicle() != null ? mission.getVehicle().getId() : null)")
     @Mapping(target = "vehiclePlateNumber", expression = "java(mission.getVehicle() != null ? mission.getVehicle().getPlateNumber() : null)")
+    @Mapping(source = "departureLocation", target = "departureLocation")
+    @Mapping(source = "destinationLocation", target = "destinationLocation")
     @Mapping(source = "vehicleInspection", target = "vehicleInspection")
     @Mapping(source = "missionDocuments", target = "documents")
     MissionDTO toDTO(Mission mission);
