@@ -66,11 +66,8 @@ public class VehicleDocumentController {
     // =====================================================
 
     @PostMapping("/upload")
-    public VehicleDocumentDTO upload(@RequestPart("file") MultipartFile file, @ModelAttribute UploadVehicleDocumentRequest request) {
-
-
-        return vehicleDocumentService.uploadDocument(file, request);
-
+    public VehicleDocumentDTO upload(@RequestPart("file") MultipartFile file, @ModelAttribute UploadVehicleDocumentRequest request, @AuthenticationPrincipal User user) {
+        return vehicleDocumentService.uploadDocument(file, request, user);
     }
 
 

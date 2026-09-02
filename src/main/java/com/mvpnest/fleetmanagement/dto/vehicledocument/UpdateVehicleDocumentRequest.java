@@ -3,6 +3,8 @@ package com.mvpnest.fleetmanagement.dto.vehicledocument;
 import com.mvpnest.fleetmanagement.enums.VehicleDocumentType;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,6 +16,6 @@ public class UpdateVehicleDocumentRequest {
 
     private VehicleDocumentType type;
 
-    private Integer year;
+    private LocalDate expiryDate;
 
 }

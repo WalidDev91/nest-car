@@ -8,7 +8,6 @@ import com.mvpnest.fleetmanagement.entity.Vehicle;
 import com.mvpnest.fleetmanagement.entity.VehicleDocument;
 import com.mvpnest.fleetmanagement.mapper.VehicleDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.MissionRepository;
-import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.repository.VehicleDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.VehicleRepository;
 import com.mvpnest.fleetmanagement.service.VehicleDocumentService;
@@ -38,7 +37,6 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
 
     private final VehicleRepository vehicleRepository;
     private final VehicleDocumentRepository vehicleDocumentRepository;
-    private final UserRepository userRepository;
     private final VehicleDocumentMapper mapper;
     private final MissionRepository missionRepository;
 
@@ -121,7 +119,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
     // =====================================================
 
     @Override
-    public VehicleDocumentDTO uploadDocument(MultipartFile file, UploadVehicleDocumentRequest request) {
+    public VehicleDocumentDTO uploadDocument(MultipartFile file, UploadVehicleDocumentRequest request, User currentUser) {
 
         try {
 
@@ -141,7 +139,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
 
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            VehicleDocument document = VehicleDocument.builder().title(request.getTitle()).type(request.getType()).year(request.getYear()).fileUrl(filename).vehicle(vehicle).build();
+            VehicleDocument document = VehicleDocument.builder().title(request.getTitle()).type(request.getType()).expiryDate(request.getExpiryDate()).fileUrl(filename).vehicle(vehicle).uploadedBy(currentUser).build();
 
             return mapper.toDTO(vehicleDocumentRepository.save(document));
 
@@ -199,7 +197,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
 
         document.setTitle(request.getTitle());
         document.setType(request.getType());
-        document.setYear(request.getYear());
+        document.setExpiryDate(request.getExpiryDate());
 
         VehicleDocument saved = vehicleDocumentRepository.save(document);
 

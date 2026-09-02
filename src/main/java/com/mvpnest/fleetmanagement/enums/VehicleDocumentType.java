@@ -5,5 +5,5 @@ public enum VehicleDocumentType {
     TECHNICAL_CHECK,
     INSURANCE,
     VEHICLE_TAX,
-    OTHERS
+    OTHER
 }

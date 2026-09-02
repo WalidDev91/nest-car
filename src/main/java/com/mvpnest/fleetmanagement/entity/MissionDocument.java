@@ -35,4 +35,8 @@ public class MissionDocument extends BaseEntity {
     private Mission mission;
     // fix: each mission document belongs to one mission
 
+    @ManyToOne
+    @JoinColumn(name = "uploaded_by_id", nullable = false)
+    private User uploadedBy;
+
 }

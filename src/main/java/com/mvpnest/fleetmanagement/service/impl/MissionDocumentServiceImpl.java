@@ -130,7 +130,7 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     // =====================================================
 
     @Override
-    public MissionDocumentDTO uploadDocument(MultipartFile file, UploadMissionDocumentRequest request) {
+    public MissionDocumentDTO uploadDocument(MultipartFile file, UploadMissionDocumentRequest request, User currentUser) {
 
 
         try {
@@ -161,7 +161,7 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
 
-            MissionDocument document = MissionDocument.builder().title(request.getTitle()).fileUrl(filename).mission(mission).build();
+            MissionDocument document = MissionDocument.builder().title(request.getTitle()).fileUrl(filename).mission(mission).uploadedBy(currentUser).build();
 
 
             return mapper.toDTO(missionDocumentRepository.save(document));

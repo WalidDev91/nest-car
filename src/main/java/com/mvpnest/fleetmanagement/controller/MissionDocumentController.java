@@ -69,11 +69,8 @@ public class MissionDocumentController {
     // =====================================================
 
     @PostMapping("/upload")
-    public MissionDocumentDTO upload(@RequestPart("file") MultipartFile file, @ModelAttribute UploadMissionDocumentRequest request) {
-
-
-        return missionDocumentService.uploadDocument(file, request);
-
+    public MissionDocumentDTO upload(@RequestPart("file") MultipartFile file, @ModelAttribute UploadMissionDocumentRequest request, @AuthenticationPrincipal User user) {
+        return missionDocumentService.uploadDocument(file, request, user);
     }
 
 

@@ -3,6 +3,7 @@ package com.mvpnest.fleetmanagement.dto.vehicledocument;
 import com.mvpnest.fleetmanagement.enums.VehicleDocumentType;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -21,7 +22,7 @@ public class VehicleDocumentDTO {
 
     private String fileUrl;
 
-    private Integer year;
+    private LocalDate expiryDate;
 
     // vehicle
     private UUID vehicleId;
@@ -29,4 +30,7 @@ public class VehicleDocumentDTO {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private UUID uploadedById;
+    private String uploadedByName;
 }

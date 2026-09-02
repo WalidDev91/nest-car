@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -114,7 +115,7 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
 
 
     @Override
-    public DriverDocumentDTO uploadDocument(MultipartFile file, String title, DriverDocumentType type, UUID driverId) {
+    public DriverDocumentDTO uploadDocument(MultipartFile file, String title, DriverDocumentType type, LocalDate expiryDate, UUID driverId) {
 
 
         try {
@@ -143,7 +144,7 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
             User driver = userRepository.findById(driverId).orElseThrow(() -> new RuntimeException("Driver not found"));
 
 
-            DriverDocument document = DriverDocument.builder().title(title).type(type).fileUrl(filename).status(DriverDocumentStatus.PENDING).uploadedAt(LocalDateTime.now()).driver(driver).build();
+            DriverDocument document = DriverDocument.builder().title(title).type(type).expiryDate(expiryDate).fileUrl(filename).status(DriverDocumentStatus.PENDING).uploadedAt(LocalDateTime.now()).driver(driver).build();
 
 
             return mapper.toDTO(driverDocumentRepository.save(document));
@@ -167,6 +168,10 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
 
         if (request.getTitle() != null) {
             document.setTitle(request.getTitle());
+        }
+
+        if (request.getExpiryDate() != null) {
+            document.setExpiryDate(request.getExpiryDate());
         }
 
 

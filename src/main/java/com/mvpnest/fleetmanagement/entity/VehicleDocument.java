@@ -4,6 +4,7 @@ import com.mvpnest.fleetmanagement.enums.VehicleDocumentType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -31,7 +32,7 @@ public class VehicleDocument extends BaseEntity {
     private String fileUrl;
 
     @Column(nullable = false)
-    private Integer year;
+    private LocalDate expiryDate;
 
     // ================== ASSOCIATION ==================
 
@@ -40,5 +41,9 @@ public class VehicleDocument extends BaseEntity {
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
     // fix: each document belongs to one vehicle
+
+    @ManyToOne
+    @JoinColumn(name = "uploaded_by_id", nullable = false)
+    private User uploadedBy;
 
 }

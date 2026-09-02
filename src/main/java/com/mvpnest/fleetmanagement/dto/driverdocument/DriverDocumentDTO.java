@@ -4,6 +4,7 @@ import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -21,6 +22,8 @@ public class DriverDocumentDTO {
     private DriverDocumentType type;
 
     private String fileUrl;
+
+    private LocalDate expiryDate;
 
     private DriverDocumentStatus status;
 

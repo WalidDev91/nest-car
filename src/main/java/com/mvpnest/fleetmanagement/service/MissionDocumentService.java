@@ -20,7 +20,7 @@ public interface MissionDocumentService {
 
     List<MissionDocumentDTO> getDocumentsByMissionId(UUID missionId);
 
-    MissionDocumentDTO uploadDocument(MultipartFile file, UploadMissionDocumentRequest request);
+    MissionDocumentDTO uploadDocument(MultipartFile file, UploadMissionDocumentRequest request, User currentUser);
 
     //MissionDocumentDTO updateDocumentTitle(UUID id, String title);
 

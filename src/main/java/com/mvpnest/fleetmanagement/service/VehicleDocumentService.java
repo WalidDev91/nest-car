@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public interface VehicleDocumentService {
 
-    VehicleDocumentDTO uploadDocument(MultipartFile file, UploadVehicleDocumentRequest request);
+    VehicleDocumentDTO uploadDocument(MultipartFile file, UploadVehicleDocumentRequest request, User currentUser);
 
     VehicleDocumentDTO getDocumentById(UUID id);
 

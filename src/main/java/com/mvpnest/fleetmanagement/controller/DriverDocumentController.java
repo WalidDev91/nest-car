@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,10 +36,10 @@ public class DriverDocumentController {
     // =====================================================
 
     @PostMapping("/upload")
-    public DriverDocumentDTO upload(@RequestPart("file") MultipartFile file, @RequestParam String title, @RequestParam DriverDocumentType type, @RequestParam UUID driverId) {
+    public DriverDocumentDTO upload(@RequestPart("file") MultipartFile file, @RequestParam String title, @RequestParam DriverDocumentType type, @RequestParam LocalDate expiryDate, @RequestParam UUID driverId) {
 
 
-        return driverDocumentService.uploadDocument(file, title, type, driverId);
+        return driverDocumentService.uploadDocument(file, title, type, expiryDate, driverId);
 
     }
 

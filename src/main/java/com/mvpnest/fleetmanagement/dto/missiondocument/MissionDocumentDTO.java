@@ -24,4 +24,7 @@ public class MissionDocumentDTO {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private UUID uploadedById;
+    private String uploadedByName;
 }

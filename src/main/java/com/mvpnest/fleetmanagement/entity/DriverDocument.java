@@ -5,6 +5,7 @@ import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -37,6 +38,9 @@ public class DriverDocument extends BaseEntity {
     @Column(nullable = false)
     private String fileUrl;
 
+    @Column(nullable = false)
+    private LocalDate expiryDate;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -48,7 +52,6 @@ public class DriverDocument extends BaseEntity {
 
 
     private LocalDateTime validatedAt;
-
 
 
     // ================= ASSOCIATION =================
