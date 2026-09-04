@@ -1,6 +1,7 @@
 package com.mvpnest.fleetmanagement.service;
 
 import com.mvpnest.fleetmanagement.dto.vehicle.CreateVehicleRequest;
+import com.mvpnest.fleetmanagement.dto.vehicle.UpdateVehicleRequest;
 import com.mvpnest.fleetmanagement.dto.vehicle.VehicleDTO;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.entity.Vehicle;
@@ -162,6 +163,58 @@ class VehicleServiceImplTest {
         verify(vehicleRepository).save(any(Vehicle.class));
 
         SecurityContextHolder.clearContext();
+    }
+
+
+    @Test
+    void updateVehicle_updatesVehicle() {
+
+        UUID id = UUID.randomUUID();
+
+        Vehicle vehicle = Vehicle.builder().id(id).plateNumber("OLD").build();
+
+        User admin = User.builder().id(UUID.randomUUID()).build();
+
+        SecurityContext context = mock(SecurityContext.class);
+        Authentication authentication = mock(Authentication.class);
+
+        when(context.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(admin);
+
+        SecurityContextHolder.setContext(context);
+
+        UpdateVehicleRequest request = new UpdateVehicleRequest();
+        request.setPlateNumber("NEW");
+        request.setBrand("Mercedes");
+        request.setModel("Actros");
+        request.setYear(2025);
+
+        when(vehicleRepository.findById(id)).thenReturn(Optional.of(vehicle));
+
+        when(vehicleRepository.save(vehicle)).thenReturn(vehicle);
+
+        when(vehicleMapper.toDTO(vehicle)).thenReturn(new VehicleDTO());
+
+        vehicleService.updateVehicle(id, request);
+
+        assertThat(vehicle.getPlateNumber()).isEqualTo("NEW");
+        assertThat(vehicle.getBrand()).isEqualTo("Mercedes");
+        assertThat(vehicle.getModel()).isEqualTo("Actros");
+        assertThat(vehicle.getYear()).isEqualTo(2025);
+
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void getVehiclesByAdmin_whenEmpty_returnsEmptyList() {
+
+        UUID adminId = UUID.randomUUID();
+
+        when(vehicleRepository.findByAdminId(adminId)).thenReturn(List.of());
+
+        List<VehicleDTO> result = vehicleService.getVehiclesByAdmin(adminId);
+
+        assertThat(result).isEmpty();
     }
 
 }
