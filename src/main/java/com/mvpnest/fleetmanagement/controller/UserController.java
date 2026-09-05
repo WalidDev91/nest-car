@@ -1,15 +1,12 @@
 package com.mvpnest.fleetmanagement.controller;
 
-import com.mvpnest.fleetmanagement.dto.user.CreateUserRequest;
-import com.mvpnest.fleetmanagement.dto.user.UpdateSupervisorRequest;
-import com.mvpnest.fleetmanagement.dto.user.UpdateUserRequest;
-import com.mvpnest.fleetmanagement.dto.user.UserDTO;
+import com.mvpnest.fleetmanagement.dto.user.*;
+import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.service.UserService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,7 +23,6 @@ public class UserController {
     private final UserService userService;
 
 
-
     // ==========================================================
     // CREATE
     // ==========================================================
@@ -37,7 +33,6 @@ public class UserController {
         return userService.createUser(request);
 
     }
-
 
 
     // ==========================================================
@@ -52,16 +47,12 @@ public class UserController {
     }
 
 
-
     // ==========================================================
     // GET ALL / FILTER ROLE
     // ==========================================================
 
     @GetMapping
-    public List<UserDTO> getAll(
-            @RequestParam(required = false) RoleType role,
-            @RequestParam(required = false) UUID adminId
-    ) {
+    public List<UserDTO> getAll(@RequestParam(required = false) RoleType role, @RequestParam(required = false) UUID adminId) {
 
         if (adminId != null) {
             return userService.getUsersByAdmin(adminId);
@@ -75,7 +66,6 @@ public class UserController {
     }
 
 
-
     // ==========================================================
     // UPDATE
     // ==========================================================
@@ -85,7 +75,6 @@ public class UserController {
 
         return userService.updateUser(id, request);
     }
-
 
 
     // ==========================================================
@@ -102,7 +91,6 @@ public class UserController {
     }
 
 
-
     // ==========================================================
     // DEACTIVATE
     // ==========================================================
@@ -117,7 +105,6 @@ public class UserController {
     }
 
 
-
     // ==========================================================
     // CHANGE ROLE
     // ==========================================================
@@ -125,10 +112,7 @@ public class UserController {
     @PatchMapping("/{id}/role")
     public ResponseEntity<Void> changeRole(@PathVariable UUID id, @RequestBody RoleRequest request) {
 
-        userService.changeRole(
-                id,
-                request.getRole()
-        );
+        userService.changeRole(id, request.getRole());
 
         return ResponseEntity.ok().build();
 
@@ -152,6 +136,60 @@ public class UserController {
     // INNER DTO FOR ROLE CHANGE
     // ==========================================================
 
+    @PostMapping("/{id}/image")
+    public UserDTO uploadImage(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
+        return userService.uploadImage(id, file);
+    }
+
+    // ==========================================================
+// UPLOAD PROFILE IMAGE
+// ==========================================================
+
+    @DeleteMapping("/{id}/image")
+    public UserDTO deleteImage(@PathVariable UUID id) {
+        return userService.deleteImage(id);
+    }
+
+// ==========================================================
+// DELETE PROFILE IMAGE
+// ==========================================================
+
+    // ==========================================================
+// UPDATE SUPERVISOR
+// ==========================================================
+    @PutMapping("/{id}/supervisor")
+    public UserDTO assignSupervisor(@PathVariable UUID id, @RequestBody UpdateSupervisorRequest request) {
+        return userService.updateSupervisor(id, request);
+    }
+
+    @PatchMapping("/me/profile")
+    public UserDTO updateOwnProfile(@RequestBody UpdateProfileRequest request, Authentication authentication) {
+
+        User currentUser = (User) authentication.getPrincipal();
+
+        return userService.updateProfile(currentUser.getId(), request);
+
+    }
+
+// ==========================================================
+// UPDATE OWN PROFILE (self-service, no role/admin change)
+// ==========================================================
+
+    @PatchMapping("/me/password")
+    public ResponseEntity<Void> changeOwnPassword(@RequestBody ChangePasswordRequest request, Authentication authentication) {
+
+        User currentUser = (User) authentication.getPrincipal();
+
+        userService.changePassword(currentUser.getId(), request);
+
+        return ResponseEntity.ok().build();
+
+    }
+
+// ==========================================================
+// CHANGE OWN PASSWORD
+// ==========================================================
+
     public static class RoleRequest {
 
         private RoleType role;
@@ -168,34 +206,6 @@ public class UserController {
             this.role = role;
         }
 
-    }
-
-    // ==========================================================
-// UPLOAD PROFILE IMAGE
-// ==========================================================
-
-    @PostMapping("/{id}/image")
-    public UserDTO uploadImage(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
-        return userService.uploadImage(id, file);
-    }
-
-// ==========================================================
-// DELETE PROFILE IMAGE
-// ==========================================================
-
-    @DeleteMapping("/{id}/image")
-    public UserDTO deleteImage(@PathVariable UUID id) {
-        return userService.deleteImage(id);
-    }
-
-
-
-// ==========================================================
-// UPDATE SUPERVISOR
-// ==========================================================
-    @PutMapping("/{id}/supervisor")
-    public UserDTO assignSupervisor(@PathVariable UUID id, @RequestBody UpdateSupervisorRequest request) {
-        return userService.updateSupervisor(id, request);
     }
 
 }

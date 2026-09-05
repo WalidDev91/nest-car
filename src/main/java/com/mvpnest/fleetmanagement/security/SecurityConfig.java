@@ -38,6 +38,7 @@ public class SecurityConfig {
                 requestMatchers("/api/driver-documents/**").authenticated().
                 requestMatchers("/api/vehicle-documents/**").authenticated().
                 requestMatchers("/api/mission-documents/**").authenticated().
+                requestMatchers("/api/requests/**").authenticated().
                 anyRequest().authenticated()).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

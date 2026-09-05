@@ -1,9 +1,6 @@
 package com.mvpnest.fleetmanagement.service;
 
-import com.mvpnest.fleetmanagement.dto.user.CreateUserRequest;
-import com.mvpnest.fleetmanagement.dto.user.UpdateSupervisorRequest;
-import com.mvpnest.fleetmanagement.dto.user.UpdateUserRequest;
-import com.mvpnest.fleetmanagement.dto.user.UserDTO;
+import com.mvpnest.fleetmanagement.dto.user.*;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,5 +34,9 @@ public interface UserService {
     UserDTO uploadImage(UUID id, MultipartFile file);
 
     UserDTO deleteImage(UUID id);
+
+    UserDTO updateProfile(UUID id, UpdateProfileRequest request);
+
+    void changePassword(UUID id, ChangePasswordRequest request);
 
 }

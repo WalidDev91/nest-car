@@ -1,11 +1,9 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
-import com.mvpnest.fleetmanagement.dto.user.CreateUserRequest;
-import com.mvpnest.fleetmanagement.dto.user.UpdateSupervisorRequest;
-import com.mvpnest.fleetmanagement.dto.user.UpdateUserRequest;
-import com.mvpnest.fleetmanagement.dto.user.UserDTO;
+import com.mvpnest.fleetmanagement.dto.user.*;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.enums.RoleType;
+import com.mvpnest.fleetmanagement.exception.InvalidCredentialsException;
 import com.mvpnest.fleetmanagement.mapper.UserMapper;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.service.UserService;
@@ -177,6 +175,35 @@ public class UserServiceImpl implements UserService {
 
 
         return userMapper.toDTO(userRepository.save(user));
+
+    }
+
+    @Override
+    public UserDTO updateProfile(UUID id, UpdateProfileRequest request) {
+
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+
+        return userMapper.toDTO(userRepository.save(user));
+
+    }
+
+    @Override
+    public void changePassword(UUID id, ChangePasswordRequest request) {
+
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new InvalidCredentialsException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        userRepository.save(user);
 
     }
 
