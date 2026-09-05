@@ -16,6 +16,8 @@ public class UserRequestDTO {
 
     private UUID id;
 
+    private Integer requestNumber;
+
     private RequestType type;
 
     private String subject;

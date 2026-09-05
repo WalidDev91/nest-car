@@ -30,7 +30,12 @@ public class UserRequestServiceImpl implements UserRequestService {
         User requester = userRepository.findById(requesterId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        Integer nextRequestNumber = requestRepository.findTopByOrderByRequestNumberDesc()
+                .map(r -> r.getRequestNumber() + 1)
+                .orElse(1);
+
         UserRequest userRequest = UserRequest.builder()
+                .requestNumber(nextRequestNumber)
                 .type(request.getType())
                 .subject(request.getSubject())
                 .description(request.getDescription())
@@ -38,7 +43,6 @@ public class UserRequestServiceImpl implements UserRequestService {
                 .build();
 
         return requestMapper.toDTO(requestRepository.save(userRequest));
-
     }
 
     @Override

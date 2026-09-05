@@ -21,6 +21,9 @@ public class UserRequest extends BaseEntity {
     @GeneratedValue
     private UUID id;
 
+    @Column(nullable = false, unique = true)
+    private Integer requestNumber;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RequestType type;
