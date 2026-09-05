@@ -5,6 +5,7 @@ import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,4 +22,11 @@ public interface MissionRepository extends JpaRepository<Mission, UUID> {
 
     List<Mission> findByDestinationLocation(String destinationLocation);
 
+    boolean existsByDriverIdAndStartDateLessThanAndEndDateGreaterThan(UUID driverId, LocalDateTime endDate, LocalDateTime startDate);
+
+    boolean existsByVehicleIdAndStartDateLessThanAndEndDateGreaterThan(UUID vehicleId, LocalDateTime endDate, LocalDateTime startDate);
+
+    boolean existsByDriverIdAndStartDateLessThanAndEndDateGreaterThanAndIdNot(UUID driverId, LocalDateTime endDate, LocalDateTime startDate, UUID missionId);
+
+    boolean existsByVehicleIdAndStartDateLessThanAndEndDateGreaterThanAndIdNot(UUID vehicleId, LocalDateTime endDate, LocalDateTime startDate, UUID missionId);
 }

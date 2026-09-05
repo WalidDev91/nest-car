@@ -7,6 +7,7 @@ import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.entity.Vehicle;
 import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import com.mvpnest.fleetmanagement.enums.RoleType;
+import com.mvpnest.fleetmanagement.exception.AvailabilityConflictException;
 import com.mvpnest.fleetmanagement.exception.ResourceNotFoundException;
 import com.mvpnest.fleetmanagement.mapper.MissionMapper;
 import com.mvpnest.fleetmanagement.repository.MissionRepository;
@@ -42,6 +43,7 @@ public class MissionServiceImpl implements MissionService {
         User driver = null;
 
         if (request.getStartDate() != null && request.getEndDate() != null && request.getStartDate().isAfter(request.getEndDate())) {
+
             throw new RuntimeException("Start date cannot be after end date");
         }
 
@@ -61,9 +63,9 @@ public class MissionServiceImpl implements MissionService {
             vehicle = vehicleRepository.findById(request.getVehicleId()).orElseThrow(() -> new RuntimeException("Vehicle not found"));
         }
 
+        validateAvailability(request.getDriverId(), request.getVehicleId(), request.getStartDate(), request.getEndDate());
 
         Mission mission = Mission.builder().title(request.getTitle()).description(request.getDescription()).departureLocation(request.getDepartureLocation()).destinationLocation(request.getDestinationLocation()).startDate(request.getStartDate()).endDate(request.getEndDate()).status(request.getStatus() != null ? request.getStatus() : MissionStatus.PLANNED).driver(driver).vehicle(vehicle).build();
-
 
         return missionMapper.toDTO(missionRepository.save(mission));
     }
@@ -86,11 +88,13 @@ public class MissionServiceImpl implements MissionService {
     public MissionDTO updateMission(UUID id, UpdateMissionRequest request) {
 
         if (request.getStartDate() != null && request.getEndDate() != null && request.getStartDate().isAfter(request.getEndDate())) {
+
             throw new RuntimeException("Start date cannot be after end date");
         }
 
         Mission mission = missionRepository.findById(id).orElseThrow(() -> new RuntimeException("Mission not found"));
 
+        validateAvailabilityForUpdate(request.getDriverId(), request.getVehicleId(), request.getStartDate(), request.getEndDate(), id);
 
         if (request.getDriverId() != null) {
 
@@ -106,7 +110,6 @@ public class MissionServiceImpl implements MissionService {
             mission.setDriver(null);
         }
 
-
         if (request.getVehicleId() != null) {
 
             Vehicle vehicle = vehicleRepository.findById(request.getVehicleId()).orElseThrow(() -> new RuntimeException("Vehicle not found"));
@@ -117,17 +120,16 @@ public class MissionServiceImpl implements MissionService {
             mission.setVehicle(null);
         }
 
-
         mission.setTitle(request.getTitle());
         mission.setDescription(request.getDescription());
         mission.setDepartureLocation(request.getDepartureLocation());
         mission.setDestinationLocation(request.getDestinationLocation());
         mission.setStartDate(request.getStartDate());
         mission.setEndDate(request.getEndDate());
+
         if (request.getStatus() != null) {
             mission.setStatus(request.getStatus());
         }
-
 
         return missionMapper.toDTO(missionRepository.save(mission));
     }
@@ -150,14 +152,12 @@ public class MissionServiceImpl implements MissionService {
         Mission mission = missionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Mission not found"));
 
         missionRepository.delete(mission);
-
     }
 
     @Override
     public List<MissionDTO> getMissionsByVehicleId(UUID vehicleId) {
 
         return missionRepository.findByVehicleId(vehicleId).stream().map(missionMapper::toDTO).toList();
-
     }
 
     @Override
@@ -188,6 +188,8 @@ public class MissionServiceImpl implements MissionService {
 
             vehicle = vehicleRepository.findById(request.getVehicleId()).orElseThrow(() -> new RuntimeException("Vehicle not found"));
         }
+
+        validateAvailabilityForUpdate(request.getDriverId(), request.getVehicleId(), mission.getStartDate(), mission.getEndDate(), missionId);
 
         mission.setDriver(driver);
         mission.setVehicle(vehicle);
@@ -254,4 +256,53 @@ public class MissionServiceImpl implements MissionService {
         return missionMapper.toDTO(mission);
     }
 
+    // =====================================================
+    // AVAILABILITY VALIDATION
+    // =====================================================
+
+    private void validateAvailability(UUID driverId, UUID vehicleId, LocalDateTime startDate, LocalDateTime endDate) {
+
+        if (startDate == null || endDate == null) {
+            return;
+        }
+
+        boolean driverUnavailable = driverId != null && missionRepository.existsByDriverIdAndStartDateLessThanAndEndDateGreaterThan(driverId, endDate, startDate);
+
+        boolean vehicleUnavailable = vehicleId != null && missionRepository.existsByVehicleIdAndStartDateLessThanAndEndDateGreaterThan(vehicleId, endDate, startDate);
+
+        if (driverUnavailable && vehicleUnavailable) {
+            throw new AvailabilityConflictException("Driver and vehicle are not available during this period");
+        }
+
+        if (driverUnavailable) {
+            throw new AvailabilityConflictException("Driver is not available during this period");
+        }
+
+        if (vehicleUnavailable) {
+            throw new AvailabilityConflictException("Vehicle is not available during this period");
+        }
+    }
+
+    private void validateAvailabilityForUpdate(UUID driverId, UUID vehicleId, LocalDateTime startDate, LocalDateTime endDate, UUID missionId) {
+
+        if (startDate == null || endDate == null) {
+            return;
+        }
+
+        boolean driverUnavailable = driverId != null && missionRepository.existsByDriverIdAndStartDateLessThanAndEndDateGreaterThanAndIdNot(driverId, endDate, startDate, missionId);
+
+        boolean vehicleUnavailable = vehicleId != null && missionRepository.existsByVehicleIdAndStartDateLessThanAndEndDateGreaterThanAndIdNot(vehicleId, endDate, startDate, missionId);
+
+        if (driverUnavailable && vehicleUnavailable) {
+            throw new AvailabilityConflictException("Driver and vehicle are not available during this period");
+        }
+
+        if (driverUnavailable) {
+            throw new AvailabilityConflictException("Driver is not available during this period");
+        }
+
+        if (vehicleUnavailable) {
+            throw new AvailabilityConflictException("Vehicle is not available during this period");
+        }
+    }
 }
