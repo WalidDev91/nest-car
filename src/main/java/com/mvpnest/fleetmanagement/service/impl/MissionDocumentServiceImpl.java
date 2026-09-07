@@ -7,11 +7,12 @@ import com.mvpnest.fleetmanagement.dto.missiondocument.UploadMissionDocumentRequ
 import com.mvpnest.fleetmanagement.entity.Mission;
 import com.mvpnest.fleetmanagement.entity.MissionDocument;
 import com.mvpnest.fleetmanagement.entity.User;
+import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.mapper.MissionDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.MissionDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.MissionRepository;
-import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.service.MissionDocumentService;
+import com.mvpnest.fleetmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -38,8 +39,8 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
 
     private final MissionRepository missionRepository;
     private final MissionDocumentRepository missionDocumentRepository;
-    private final UserRepository userRepository;
     private final MissionDocumentMapper mapper;
+    private final NotificationService notificationService;
 
 
     @Value("${app.upload.dir}")
@@ -61,53 +62,49 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
 
     }
 
+    private boolean isInHierarchy(User currentUser, User other) {
 
-    // =====================================================
-    // GET ALL
-    // =====================================================
+        if (other == null) return false;
+
+        if (other.getId().equals(currentUser.getId())) return true;
+
+        User walkUp = other;
+        while (walkUp != null) {
+            if (walkUp.getId().equals(currentUser.getId())) return true;
+            walkUp = walkUp.getAdmin();
+        }
+
+        walkUp = currentUser;
+        while (walkUp != null) {
+            if (walkUp.getId().equals(other.getId())) return true;
+            walkUp = walkUp.getAdmin();
+        }
+
+        return false;
+
+    }
+
 
     @Override
     public List<MissionDocumentDTO> getAllDocuments(User currentUser) {
 
-        List<MissionDocument> documents;
-
-        switch (currentUser.getRole()) {
-
-            case SUPER_ADMIN -> documents = missionDocumentRepository.findAll();
-
-            case ADMIN -> {
-
-                List<User> fleetManagers = userRepository.findByAdmin(currentUser);
-
-                List<UUID> fleetManagerIds = fleetManagers.stream().map(User::getId).toList();
-
-                documents = missionDocumentRepository.findAll().stream().filter(doc -> doc.getMission() != null && doc.getMission().getDriver() != null && doc.getMission().getDriver().getAdmin() != null && fleetManagerIds.contains(doc.getMission().getDriver().getAdmin().getId())).toList();
-            }
-
-            case FLEET_MANAGER -> {
-
-                List<User> drivers = userRepository.findByAdmin(currentUser);
-
-                List<UUID> driverIds = drivers.stream().map(User::getId).toList();
-
-                documents = missionDocumentRepository.findAll().stream().filter(doc -> doc.getMission() != null && doc.getMission().getDriver() != null && driverIds.contains(doc.getMission().getDriver().getId())).toList();
-
-            }
-
-            case DRIVER -> {
-
-                User driver = userRepository.findById(currentUser.getId()).orElseThrow(() -> new RuntimeException("Driver not found"));
-
-                List<UUID> missionIds = driver.getMissions().stream().map(Mission::getId).toList();
-                documents = missionDocumentRepository.findAll().stream().filter(doc -> missionIds.contains(doc.getMission().getId())).toList();
-
-            }
-
-            default -> documents = List.of();
-
+        if (currentUser.getRole() == RoleType.SUPER_ADMIN) {
+            return missionDocumentRepository.findAll().stream().map(mapper::toDTO).toList();
         }
 
-        return documents.stream().map(mapper::toDTO).toList();
+        return missionDocumentRepository.findAll().stream().filter(doc -> {
+
+            User owner = doc.getUploadedBy();
+
+            // Legacy/junk data safety net: if uploadedBy was never set,
+            // fall back to the mission's driver as the closest known owner.
+            if (owner == null && doc.getMission() != null) {
+                owner = doc.getMission().getDriver();
+            }
+
+            return isInHierarchy(currentUser, owner);
+
+        }).map(mapper::toDTO).toList();
 
     }
 
@@ -132,43 +129,33 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     @Override
     public MissionDocumentDTO uploadDocument(MultipartFile file, UploadMissionDocumentRequest request, User currentUser) {
 
-
         try {
 
-
             if (file.isEmpty()) {
-
                 throw new RuntimeException("File is empty");
-
             }
-
 
             Mission mission = missionRepository.findById(request.getMissionId()).orElseThrow(() -> new RuntimeException("Mission not found"));
 
-
             Path uploadPath = Paths.get(uploadDir, "mission-documents");
-
 
             Files.createDirectories(uploadPath);
 
-
             String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-
 
             Path filePath = uploadPath.resolve(filename);
 
-
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
 
             MissionDocument document = MissionDocument.builder().title(request.getTitle()).fileUrl(filename).mission(mission).uploadedBy(currentUser).build();
 
+            MissionDocument saved = missionDocumentRepository.save(document);
 
-            return mapper.toDTO(missionDocumentRepository.save(document));
+            notificationService.notifyMissionDocumentUploaded(saved);
 
+            return mapper.toDTO(saved);
 
         } catch (IOException e) {
-
 
             throw new RuntimeException("Upload failed: " + e.getMessage());
 

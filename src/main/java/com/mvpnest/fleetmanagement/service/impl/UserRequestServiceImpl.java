@@ -27,20 +27,11 @@ public class UserRequestServiceImpl implements UserRequestService {
     @Override
     public UserRequestDTO createRequest(UUID requesterId, CreateRequestRequest request) {
 
-        User requester = userRepository.findById(requesterId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User requester = userRepository.findById(requesterId).orElseThrow(() -> new RuntimeException("User not found"));
 
-        Integer nextRequestNumber = requestRepository.findTopByOrderByRequestNumberDesc()
-                .map(r -> r.getRequestNumber() + 1)
-                .orElse(1);
+        Integer nextRequestNumber = requestRepository.findTopByOrderByRequestNumberDesc().map(r -> r.getRequestNumber() + 1).orElse(1);
 
-        UserRequest userRequest = UserRequest.builder()
-                .requestNumber(nextRequestNumber)
-                .type(request.getType())
-                .subject(request.getSubject())
-                .description(request.getDescription())
-                .requester(requester)
-                .build();
+        UserRequest userRequest = UserRequest.builder().requestNumber(nextRequestNumber).type(request.getType()).subject(request.getSubject()).description(request.getDescription()).requester(requester).build();
 
         return requestMapper.toDTO(requestRepository.save(userRequest));
     }
@@ -48,37 +39,46 @@ public class UserRequestServiceImpl implements UserRequestService {
     @Override
     public List<UserRequestDTO> getMyRequests(UUID requesterId) {
 
-        return requestRepository.findByRequesterId(requesterId).stream()
-                .map(requestMapper::toDTO)
-                .toList();
+        return requestRepository.findByRequesterId(requesterId).stream().map(requestMapper::toDTO).toList();
 
     }
 
     @Override
     public List<UserRequestDTO> getVisibleRequests(UUID currentUserId) {
 
-        User currentUser = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User currentUser = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Admins and Super Admins see everything.
-        if (currentUser.getRole() == RoleType.ADMIN || currentUser.getRole() == RoleType.SUPER_ADMIN) {
-            return requestRepository.findAll().stream()
-                    .map(requestMapper::toDTO)
-                    .toList();
+        // Only Super Admin sees everything, system-wide (excluding their own requests — see below).
+        if (currentUser.getRole() == RoleType.SUPER_ADMIN) {
+            return requestRepository.findAll().stream().filter(request -> !request.getRequester().getId().equals(currentUserId)).map(requestMapper::toDTO).toList();
         }
 
-        // Everyone else (e.g. Fleet Manager) only sees requests from people they directly supervise.
-        return requestRepository.findByRequesterAdminId(currentUserId).stream()
-                .map(requestMapper::toDTO)
-                .toList();
+        return requestRepository.findAll().stream().filter(request -> !request.getRequester().getId().equals(currentUserId)).filter(request -> isInSupervisionChain(currentUserId, request.getRequester())).map(requestMapper::toDTO).toList();
+
+    }
+
+    private boolean isInSupervisionChain(UUID supervisorId, User requester) {
+
+        User current = requester;
+
+        while (current != null) {
+
+            if (current.getId().equals(supervisorId)) {
+                return true;
+            }
+
+            current = current.getAdmin();
+
+        }
+
+        return false;
 
     }
 
     @Override
     public UserRequestDTO reviewRequest(UUID requestId, ReviewRequestRequest request) {
 
-        UserRequest userRequest = requestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+        UserRequest userRequest = requestRepository.findById(requestId).orElseThrow(() -> new RuntimeException("Request not found"));
 
         userRequest.setStatus(request.getStatus());
         userRequest.setAdminResponse(request.getAdminResponse());

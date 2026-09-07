@@ -8,10 +8,12 @@ import com.mvpnest.fleetmanagement.entity.DriverDocument;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
 import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
+import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.mapper.DriverDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.DriverDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.service.DriverDocumentService;
+import com.mvpnest.fleetmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -40,6 +42,7 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
     private final DriverDocumentRepository driverDocumentRepository;
     private final UserRepository userRepository;
     private final DriverDocumentMapper mapper;
+    private final NotificationService notificationService;
 
 
     @Value("${app.upload.dir}")
@@ -57,42 +60,36 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
 
     }
 
+    private boolean isInHierarchy(User currentUser, User other) {
+
+        if (other == null) return false;
+
+        if (other.getId().equals(currentUser.getId())) return true;
+
+        User walkUp = other;
+        while (walkUp != null) {
+            if (walkUp.getId().equals(currentUser.getId())) return true;
+            walkUp = walkUp.getAdmin();
+        }
+
+        walkUp = currentUser;
+        while (walkUp != null) {
+            if (walkUp.getId().equals(other.getId())) return true;
+            walkUp = walkUp.getAdmin();
+        }
+
+        return false;
+
+    }
+
     @Override
     public List<DriverDocumentDTO> getAllDocuments(User currentUser) {
 
-        List<DriverDocument> documents;
-
-        switch (currentUser.getRole()) {
-
-            case SUPER_ADMIN -> documents = driverDocumentRepository.findAll();
-
-            case ADMIN -> {
-
-                List<User> fleetManagers = userRepository.findByAdmin(currentUser);
-
-                List<UUID> driverIds = fleetManagers.stream().flatMap(fm -> userRepository.findByAdmin(fm).stream()).map(User::getId).toList();
-
-                documents = driverDocumentRepository.findAll().stream().filter(doc -> driverIds.contains(doc.getDriver().getId())).toList();
-
-            }
-
-            case FLEET_MANAGER -> {
-
-                List<User> drivers = userRepository.findByAdmin(currentUser);
-
-                List<UUID> driverIds = drivers.stream().map(User::getId).toList();
-
-                documents = driverDocumentRepository.findAll().stream().filter(doc -> driverIds.contains(doc.getDriver().getId())).toList();
-
-            }
-
-            case DRIVER -> documents = driverDocumentRepository.findByDriverId(currentUser.getId());
-
-            default -> documents = List.of();
-
+        if (currentUser.getRole() == RoleType.SUPER_ADMIN) {
+            return driverDocumentRepository.findAll().stream().map(mapper::toDTO).toList();
         }
 
-        return documents.stream().map(mapper::toDTO).toList();
+        return driverDocumentRepository.findAll().stream().filter(doc -> isInHierarchy(currentUser, doc.getDriver())).map(mapper::toDTO).toList();
 
     }
 
@@ -117,45 +114,37 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
     @Override
     public DriverDocumentDTO uploadDocument(MultipartFile file, String title, DriverDocumentType type, LocalDate expiryDate, UUID driverId) {
 
-
         try {
-
 
             if (file.isEmpty()) {
                 throw new RuntimeException("File is empty");
             }
 
-
             Path folder = Paths.get(uploadDir, "driver-documents");
-
 
             Files.createDirectories(folder);
 
-
             String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-
 
             Path path = folder.resolve(filename);
 
-
             Files.copy(file.getInputStream(), path);
-
 
             User driver = userRepository.findById(driverId).orElseThrow(() -> new RuntimeException("Driver not found"));
 
-
             DriverDocument document = DriverDocument.builder().title(title).type(type).expiryDate(expiryDate).fileUrl(filename).status(DriverDocumentStatus.PENDING).uploadedAt(LocalDateTime.now()).driver(driver).build();
 
+            DriverDocument saved = driverDocumentRepository.save(document);
 
-            return mapper.toDTO(driverDocumentRepository.save(document));
+            notificationService.notifyDriverDocumentUploaded(saved);
 
+            return mapper.toDTO(saved);
 
         } catch (IOException e) {
 
             throw new RuntimeException("Upload failed");
 
         }
-
 
     }
 
@@ -245,6 +234,8 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
         }
 
         DriverDocument saved = driverDocumentRepository.save(document);
+
+        notificationService.notifyDriverDocumentStatusChanged(saved);
 
         return mapper.toDTO(saved);
 

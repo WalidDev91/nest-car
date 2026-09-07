@@ -6,10 +6,11 @@ import com.mvpnest.fleetmanagement.dto.vehicledocument.VehicleDocumentDTO;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.entity.Vehicle;
 import com.mvpnest.fleetmanagement.entity.VehicleDocument;
+import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.mapper.VehicleDocumentMapper;
-import com.mvpnest.fleetmanagement.repository.MissionRepository;
 import com.mvpnest.fleetmanagement.repository.VehicleDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.VehicleRepository;
+import com.mvpnest.fleetmanagement.service.NotificationService;
 import com.mvpnest.fleetmanagement.service.VehicleDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -38,7 +38,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
     private final VehicleRepository vehicleRepository;
     private final VehicleDocumentRepository vehicleDocumentRepository;
     private final VehicleDocumentMapper mapper;
-    private final MissionRepository missionRepository;
+    private final NotificationService notificationService;
 
 
     @Value("${app.upload.dir}")
@@ -57,48 +57,37 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
         return mapper.toDTO(document);
     }
 
+    private boolean isInHierarchy(User currentUser, User other) {
 
-    // =====================================================
-    // GET ALL
-    // =====================================================
+        if (other == null) return false;
 
-    @Transactional(readOnly = true)
+        if (other.getId().equals(currentUser.getId())) return true;
+
+        User walkUp = other;
+        while (walkUp != null) {
+            if (walkUp.getId().equals(currentUser.getId())) return true;
+            walkUp = walkUp.getAdmin();
+        }
+
+        walkUp = currentUser;
+        while (walkUp != null) {
+            if (walkUp.getId().equals(other.getId())) return true;
+            walkUp = walkUp.getAdmin();
+        }
+
+        return false;
+
+    }
+
+
     @Override
     public List<VehicleDocumentDTO> getAllDocuments(User currentUser) {
 
-        List<VehicleDocument> documents;
-
-        switch (currentUser.getRole()) {
-
-            case SUPER_ADMIN -> documents = vehicleDocumentRepository.findAll();
-
-            case ADMIN -> documents = vehicleDocumentRepository.findAll().stream().filter(doc -> {
-
-                if (doc.getVehicle() == null || doc.getVehicle().getAdmin() == null) return false;
-
-                User creator = doc.getVehicle().getAdmin();
-
-                // Admin sees their own vehicles, plus any created by a
-                // Fleet Manager who reports to them.
-                return creator.getId().equals(currentUser.getId()) || (creator.getAdmin() != null && creator.getAdmin().getId().equals(currentUser.getId()));
-
-            }).toList();
-
-            case FLEET_MANAGER ->
-                    documents = vehicleDocumentRepository.findAll().stream().filter(doc -> doc.getVehicle() != null && doc.getVehicle().getAdmin() != null && doc.getVehicle().getAdmin().getId().equals(currentUser.getId())).toList();
-
-            case DRIVER -> {
-
-                List<UUID> vehicleIds = missionRepository.findByDriverId(currentUser.getId()).stream().filter(m -> m.getVehicle() != null).map(m -> m.getVehicle().getId()).distinct().toList();
-
-                documents = vehicleDocumentRepository.findAll().stream().filter(doc -> doc.getVehicle() != null && vehicleIds.contains(doc.getVehicle().getId())).toList();
-            }
-
-            default -> documents = List.of();
-
+        if (currentUser.getRole() == RoleType.SUPER_ADMIN) {
+            return vehicleDocumentRepository.findAll().stream().map(mapper::toDTO).toList();
         }
 
-        return documents.stream().map(mapper::toDTO).toList();
+        return vehicleDocumentRepository.findAll().stream().filter(doc -> isInHierarchy(currentUser, doc.getUploadedBy())).map(mapper::toDTO).toList();
 
     }
 
@@ -141,7 +130,11 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
 
             VehicleDocument document = VehicleDocument.builder().title(request.getTitle()).type(request.getType()).expiryDate(request.getExpiryDate()).fileUrl(filename).vehicle(vehicle).uploadedBy(currentUser).build();
 
-            return mapper.toDTO(vehicleDocumentRepository.save(document));
+            VehicleDocument saved = vehicleDocumentRepository.save(document);
+
+            notificationService.notifyVehicleDocumentUploaded(saved);
+
+            return mapper.toDTO(saved);
 
         } catch (IOException e) {
 

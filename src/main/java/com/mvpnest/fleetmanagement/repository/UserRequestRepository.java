@@ -13,8 +13,6 @@ public interface UserRequestRepository extends JpaRepository<UserRequest, UUID> 
 
     List<UserRequest> findByRequesterId(UUID requesterId);
 
-    List<UserRequest> findByRequesterAdminId(UUID adminId);
-
     Optional<UserRequest> findTopByOrderByRequestNumberDesc();
 
 }

@@ -39,6 +39,7 @@ public class SecurityConfig {
                 requestMatchers("/api/vehicle-documents/**").authenticated().
                 requestMatchers("/api/mission-documents/**").authenticated().
                 requestMatchers("/api/requests/**").authenticated().
+                requestMatchers("/api/notifications/**").authenticated().
                 anyRequest().authenticated()).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

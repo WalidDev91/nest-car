@@ -1,0 +1,12 @@
+package com.mvpnest.fleetmanagement.enums;
+
+public enum NotificationType {
+    DOCUMENT_UPLOADED,
+    DOCUMENT_APPROVED,
+    DOCUMENT_REJECTED,
+    DOCUMENT_EXPIRING_SOON,
+    MISSION_ASSIGNED,
+    VEHICLE_ASSIGNED,
+    REQUEST_SUBMITTED,
+    REQUEST_REVIEWED
+}
