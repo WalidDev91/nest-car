@@ -9,6 +9,7 @@ import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.mapper.UserRequestMapper;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.repository.UserRequestRepository;
+import com.mvpnest.fleetmanagement.service.NotificationService;
 import com.mvpnest.fleetmanagement.service.UserRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class UserRequestServiceImpl implements UserRequestService {
     private final UserRequestRepository requestRepository;
     private final UserRepository userRepository;
     private final UserRequestMapper requestMapper;
+    private final NotificationService notificationService;
 
     @Override
     public UserRequestDTO createRequest(UUID requesterId, CreateRequestRequest request) {
@@ -33,7 +35,11 @@ public class UserRequestServiceImpl implements UserRequestService {
 
         UserRequest userRequest = UserRequest.builder().requestNumber(nextRequestNumber).type(request.getType()).subject(request.getSubject()).description(request.getDescription()).requester(requester).build();
 
-        return requestMapper.toDTO(requestRepository.save(userRequest));
+        UserRequest saved = requestRepository.save(userRequest);
+
+        notificationService.notifyRequestSubmitted(saved);
+
+        return requestMapper.toDTO(saved);
     }
 
     @Override
@@ -83,7 +89,11 @@ public class UserRequestServiceImpl implements UserRequestService {
         userRequest.setStatus(request.getStatus());
         userRequest.setAdminResponse(request.getAdminResponse());
 
-        return requestMapper.toDTO(requestRepository.save(userRequest));
+        UserRequest saved = requestRepository.save(userRequest);
+
+        notificationService.notifyRequestReviewed(saved);
+
+        return requestMapper.toDTO(saved);
 
     }
 

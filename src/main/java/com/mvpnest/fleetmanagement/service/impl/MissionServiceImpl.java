@@ -17,6 +17,7 @@ import com.mvpnest.fleetmanagement.repository.VehicleRepository;
 import com.mvpnest.fleetmanagement.service.MissionService;
 import com.mvpnest.fleetmanagement.service.MissionVehicleInspectionService;
 import com.mvpnest.fleetmanagement.service.MissionVehiclePhotoService;
+import com.mvpnest.fleetmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,6 +37,7 @@ public class MissionServiceImpl implements MissionService {
     private final MissionVehicleInspectionService inspectionService;
     private final MissionVehiclePhotoService photoService;
     private final MissionMapper missionMapper;
+    private final NotificationService notificationService;
 
     @Override
     public MissionDTO createMission(CreateMissionRequest request) {
@@ -67,7 +69,17 @@ public class MissionServiceImpl implements MissionService {
 
         Mission mission = Mission.builder().title(request.getTitle()).description(request.getDescription()).departureLocation(request.getDepartureLocation()).destinationLocation(request.getDestinationLocation()).startDate(request.getStartDate()).endDate(request.getEndDate()).status(request.getStatus() != null ? request.getStatus() : MissionStatus.PLANNED).driver(driver).vehicle(vehicle).build();
 
-        return missionMapper.toDTO(missionRepository.save(mission));
+        Mission saved = missionRepository.save(mission);
+
+        if (saved.getDriver() != null) {
+            notificationService.notifyMissionAssigned(saved);
+        }
+
+        if (saved.getDriver() != null && saved.getVehicle() != null) {
+            notificationService.notifyVehicleAssigned(saved);
+        }
+
+        return missionMapper.toDTO(saved);
     }
 
     @Override
@@ -95,6 +107,9 @@ public class MissionServiceImpl implements MissionService {
         Mission mission = missionRepository.findById(id).orElseThrow(() -> new RuntimeException("Mission not found"));
 
         validateAvailabilityForUpdate(request.getDriverId(), request.getVehicleId(), request.getStartDate(), request.getEndDate(), id);
+
+        boolean driverWasNull = mission.getDriver() == null;
+        boolean vehicleWasNull = mission.getVehicle() == null;
 
         if (request.getDriverId() != null) {
 
@@ -131,7 +146,19 @@ public class MissionServiceImpl implements MissionService {
             mission.setStatus(request.getStatus());
         }
 
-        return missionMapper.toDTO(missionRepository.save(mission));
+        Mission saved = missionRepository.save(mission);
+
+        // Only notify if a driver/vehicle was newly assigned (wasn't set before),
+        // to avoid re-notifying on every unrelated edit to an already-assigned mission.
+        if (driverWasNull && saved.getDriver() != null) {
+            notificationService.notifyMissionAssigned(saved);
+        }
+
+        if (vehicleWasNull && saved.getVehicle() != null && saved.getDriver() != null) {
+            notificationService.notifyVehicleAssigned(saved);
+        }
+
+        return missionMapper.toDTO(saved);
     }
 
     @Override
@@ -191,10 +218,23 @@ public class MissionServiceImpl implements MissionService {
 
         validateAvailabilityForUpdate(request.getDriverId(), request.getVehicleId(), mission.getStartDate(), mission.getEndDate(), missionId);
 
+        boolean driverWasNull = mission.getDriver() == null;
+        boolean vehicleWasNull = mission.getVehicle() == null;
+
         mission.setDriver(driver);
         mission.setVehicle(vehicle);
 
-        return missionMapper.toDTO(missionRepository.save(mission));
+        Mission saved = missionRepository.save(mission);
+
+        if (driverWasNull && saved.getDriver() != null) {
+            notificationService.notifyMissionAssigned(saved);
+        }
+
+        if (vehicleWasNull && saved.getVehicle() != null && saved.getDriver() != null) {
+            notificationService.notifyVehicleAssigned(saved);
+        }
+
+        return missionMapper.toDTO(saved);
     }
 
     @Override

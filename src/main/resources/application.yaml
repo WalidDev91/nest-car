@@ -54,7 +54,7 @@ app:
   upload:
     dir: uploads
 
-  base-url: http://localhost:8080
+  base-url: ${APP_BASE_URL}
 
 management:
   endpoints:

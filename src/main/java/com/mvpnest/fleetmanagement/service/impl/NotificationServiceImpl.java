@@ -21,12 +21,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
+    private static final int EXPIRY_REMINDER_DAYS_AHEAD = 7;
     private final NotificationRepository notificationRepository;
     private final NotificationMapper mapper;
     private final DriverDocumentRepository driverDocumentRepository;
     private final VehicleDocumentRepository vehicleDocumentRepository;
-
-    private static final int EXPIRY_REMINDER_DAYS_AHEAD = 7;
 
     // =====================================================
     // READ / MANAGE
@@ -35,9 +34,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<NotificationDTO> getMyNotifications(UUID userId) {
 
-        return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(userId).stream()
-                .map(mapper::toDTO)
-                .toList();
+        return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(userId).stream().map(mapper::toDTO).toList();
 
     }
 
@@ -51,8 +48,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void markAsRead(UUID notificationId, UUID currentUserId) {
 
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+        Notification notification = notificationRepository.findById(notificationId).orElseThrow(() -> new RuntimeException("Notification not found"));
 
         if (!notification.getRecipient().getId().equals(currentUserId)) {
             throw new RuntimeException("You cannot modify another user's notification");
@@ -89,13 +85,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (recipient == null) return;
 
-        Notification notification = Notification.builder()
-                .recipient(recipient)
-                .type(type)
-                .title(title)
-                .message(message)
-                .link(link)
-                .build();
+        Notification notification = Notification.builder().recipient(recipient).type(type).title(title).message(message).link(link).build();
 
         notificationRepository.save(notification);
 
@@ -112,13 +102,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (driver == null || driver.getAdmin() == null) return;
 
-        createNotification(
-                driver.getAdmin(),
-                NotificationType.DOCUMENT_UPLOADED,
-                "New document uploaded",
-                driver.getFirstName() + " " + driver.getLastName() + " uploaded a new document: " + document.getTitle(),
-                "/documents"
-        );
+        createNotification(driver.getAdmin(), NotificationType.DOCUMENT_UPLOADED, "New document uploaded", driver.getFirstName() + " " + driver.getLastName() + " uploaded a new document: " + document.getTitle(), "/documents");
 
     }
 
@@ -134,13 +118,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (!approved && !rejected) return;
 
-        createNotification(
-                driver,
-                approved ? NotificationType.DOCUMENT_APPROVED : NotificationType.DOCUMENT_REJECTED,
-                approved ? "Document approved" : "Document rejected",
-                "Your document \"" + document.getTitle() + "\" was " + (approved ? "approved" : "rejected") + ".",
-                "/profile"
-        );
+        createNotification(driver, approved ? NotificationType.DOCUMENT_APPROVED : NotificationType.DOCUMENT_REJECTED, approved ? "Document approved" : "Document rejected", "Your document \"" + document.getTitle() + "\" was " + (approved ? "approved" : "rejected") + ".", "/profile");
 
     }
 
@@ -155,13 +133,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (uploader == null || uploader.getAdmin() == null) return;
 
-        createNotification(
-                uploader.getAdmin(),
-                NotificationType.DOCUMENT_UPLOADED,
-                "New vehicle document uploaded",
-                uploader.getFirstName() + " " + uploader.getLastName() + " uploaded a vehicle document: " + document.getTitle(),
-                "/documents"
-        );
+        createNotification(uploader.getAdmin(), NotificationType.DOCUMENT_UPLOADED, "New vehicle document uploaded", uploader.getFirstName() + " " + uploader.getLastName() + " uploaded a vehicle document: " + document.getTitle(), "/documents");
 
     }
 
@@ -176,13 +148,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (uploader == null || uploader.getAdmin() == null) return;
 
-        createNotification(
-                uploader.getAdmin(),
-                NotificationType.DOCUMENT_UPLOADED,
-                "New mission document uploaded",
-                uploader.getFirstName() + " " + uploader.getLastName() + " uploaded a mission document: " + document.getTitle(),
-                "/documents"
-        );
+        createNotification(uploader.getAdmin(), NotificationType.DOCUMENT_UPLOADED, "New mission document uploaded", uploader.getFirstName() + " " + uploader.getLastName() + " uploaded a mission document: " + document.getTitle(), "/documents");
 
     }
 
@@ -197,13 +163,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (driver == null) return;
 
-        createNotification(
-                driver,
-                NotificationType.MISSION_ASSIGNED,
-                "New mission assigned",
-                "You have been assigned to mission: " + mission.getTitle(),
-                "/missions"
-        );
+        createNotification(driver, NotificationType.MISSION_ASSIGNED, "New mission assigned", "You have been assigned to mission: " + mission.getTitle(), "/missions");
 
     }
 
@@ -214,13 +174,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (driver == null || mission.getVehicle() == null) return;
 
-        createNotification(
-                driver,
-                NotificationType.VEHICLE_ASSIGNED,
-                "Vehicle assigned",
-                "Vehicle " + mission.getVehicle().getPlateNumber() + " has been assigned to your mission: " + mission.getTitle(),
-                "/missions"
-        );
+        createNotification(driver, NotificationType.VEHICLE_ASSIGNED, "Vehicle assigned", "Vehicle " + mission.getVehicle().getPlateNumber() + " has been assigned to your mission: " + mission.getTitle(), "/missions");
 
     }
 
@@ -233,15 +187,18 @@ public class NotificationServiceImpl implements NotificationService {
 
         User requester = request.getRequester();
 
-        if (requester == null || requester.getAdmin() == null) return;
+        if (requester == null) {
+            return;
+        }
 
-        createNotification(
-                requester.getAdmin(),
-                NotificationType.REQUEST_SUBMITTED,
-                "New request submitted",
-                requester.getFirstName() + " " + requester.getLastName() + " submitted a request: " + request.getSubject(),
-                "/administration"
-        );
+        User supervisor = requester.getAdmin();
+
+        while (supervisor != null) {
+
+            createNotification(supervisor, NotificationType.REQUEST_SUBMITTED, "New request submitted", requester.getFirstName() + " " + requester.getLastName() + " submitted a request: " + request.getSubject(), "/administration");
+
+            supervisor = supervisor.getAdmin();
+        }
 
     }
 
@@ -252,13 +209,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (requester == null) return;
 
-        createNotification(
-                requester,
-                NotificationType.REQUEST_REVIEWED,
-                "Your request was reviewed",
-                "Your request \"" + request.getSubject() + "\" was updated to: " + request.getStatus(),
-                "/profile"
-        );
+        createNotification(requester, NotificationType.REQUEST_REVIEWED, "Your request was reviewed", "Your request \"" + request.getSubject() + "\" was updated to: " + request.getStatus(), "/profile");
 
     }
 
@@ -272,19 +223,9 @@ public class NotificationServiceImpl implements NotificationService {
 
         LocalDate threshold = LocalDate.now().plusDays(EXPIRY_REMINDER_DAYS_AHEAD);
 
-        driverDocumentRepository.findAll().stream()
-                .filter(doc -> doc.getExpiryDate() != null && !doc.getExpiryDate().isAfter(threshold) && !doc.getExpiryDate().isBefore(LocalDate.now()))
-                .forEach(doc -> remindIfNotAlreadySent(doc.getDriver(), NotificationType.DOCUMENT_EXPIRING_SOON,
-                        "Document expiring soon",
-                        "Your document \"" + doc.getTitle() + "\" expires on " + doc.getExpiryDate() + ".",
-                        "/profile"));
+        driverDocumentRepository.findAll().stream().filter(doc -> doc.getExpiryDate() != null && !doc.getExpiryDate().isAfter(threshold) && !doc.getExpiryDate().isBefore(LocalDate.now())).forEach(doc -> remindIfNotAlreadySent(doc.getDriver(), NotificationType.DOCUMENT_EXPIRING_SOON, "Document expiring soon", "Your document \"" + doc.getTitle() + "\" expires on " + doc.getExpiryDate() + ".", "/profile"));
 
-        vehicleDocumentRepository.findAll().stream()
-                .filter(doc -> doc.getExpiryDate() != null && !doc.getExpiryDate().isAfter(threshold) && !doc.getExpiryDate().isBefore(LocalDate.now()))
-                .forEach(doc -> remindIfNotAlreadySent(doc.getUploadedBy(), NotificationType.DOCUMENT_EXPIRING_SOON,
-                        "Vehicle document expiring soon",
-                        "Vehicle document \"" + doc.getTitle() + "\" expires on " + doc.getExpiryDate() + ".",
-                        "/documents"));
+        vehicleDocumentRepository.findAll().stream().filter(doc -> doc.getExpiryDate() != null && !doc.getExpiryDate().isAfter(threshold) && !doc.getExpiryDate().isBefore(LocalDate.now())).forEach(doc -> remindIfNotAlreadySent(doc.getUploadedBy(), NotificationType.DOCUMENT_EXPIRING_SOON, "Vehicle document expiring soon", "Vehicle document \"" + doc.getTitle() + "\" expires on " + doc.getExpiryDate() + ".", "/documents"));
 
     }
 
@@ -293,12 +234,9 @@ public class NotificationServiceImpl implements NotificationService {
         if (recipient == null) return;
 
         // Don't spam — skip if a reminder for this exact link was already sent in the last 24h.
-        List<Notification> recent = notificationRepository.findByLinkAndTypeAndCreatedAtAfter(
-                link, type, LocalDateTime.now().minusHours(24)
-        );
+        List<Notification> recent = notificationRepository.findByLinkAndTypeAndCreatedAtAfter(link, type, LocalDateTime.now().minusHours(24));
 
-        boolean alreadySentToThisUser = recent.stream()
-                .anyMatch(n -> n.getRecipient().getId().equals(recipient.getId()) && n.getMessage().equals(message));
+        boolean alreadySentToThisUser = recent.stream().anyMatch(n -> n.getRecipient().getId().equals(recipient.getId()) && n.getMessage().equals(message));
 
         if (alreadySentToThisUser) return;
 

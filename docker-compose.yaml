@@ -42,6 +42,8 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      APP_BASE_URL: ${APP_BASE_URL}
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fleetdb
       APP_UPLOAD_DIR: /app/uploads
     ports:

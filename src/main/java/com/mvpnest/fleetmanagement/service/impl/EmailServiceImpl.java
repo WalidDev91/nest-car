@@ -18,6 +18,9 @@ public class EmailServiceImpl implements EmailService {
     @Value("${spring.mail.username}")
     private String sender;
 
+    @Value("${APP_BASE_URL}")
+    private String baseUrl;
+
     @Async
     @Override
     public void sendResetPasswordEmail(String to, String token) {
@@ -33,10 +36,10 @@ public class EmailServiceImpl implements EmailService {
                     
                     Click the link below to reset your password:
                     
-                    http://localhost:4200/auth/reset-password?token=%s
+                    %s/auth/reset-password?token=%s
                     
                     This link expires in 5 minutes.
-                    """.formatted(token));
+                    """.formatted(baseUrl, token));
 
             mailSender.send(message);
 
