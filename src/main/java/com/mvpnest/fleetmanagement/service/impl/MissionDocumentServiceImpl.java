@@ -11,6 +11,7 @@ import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.mapper.MissionDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.MissionDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.MissionRepository;
+import com.mvpnest.fleetmanagement.service.HierarchyService;
 import com.mvpnest.fleetmanagement.service.MissionDocumentService;
 import com.mvpnest.fleetmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     private final MissionDocumentRepository missionDocumentRepository;
     private final MissionDocumentMapper mapper;
     private final NotificationService notificationService;
+    private final HierarchyService hierarchyService;
 
 
     @Value("${app.upload.dir}")
@@ -62,28 +64,6 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
 
     }
 
-    private boolean isInHierarchy(User currentUser, User other) {
-
-        if (other == null) return false;
-
-        if (other.getId().equals(currentUser.getId())) return true;
-
-        User walkUp = other;
-        while (walkUp != null) {
-            if (walkUp.getId().equals(currentUser.getId())) return true;
-            walkUp = walkUp.getAdmin();
-        }
-
-        walkUp = currentUser;
-        while (walkUp != null) {
-            if (walkUp.getId().equals(other.getId())) return true;
-            walkUp = walkUp.getAdmin();
-        }
-
-        return false;
-
-    }
-
 
     @Override
     public List<MissionDocumentDTO> getAllDocuments(User currentUser) {
@@ -102,7 +82,7 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
                 owner = doc.getMission().getDriver();
             }
 
-            return isInHierarchy(currentUser, owner);
+            return hierarchyService.isInHierarchy(currentUser, owner);
 
         }).map(mapper::toDTO).toList();
 

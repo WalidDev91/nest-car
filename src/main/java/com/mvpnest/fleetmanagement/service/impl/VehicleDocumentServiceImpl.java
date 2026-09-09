@@ -10,6 +10,7 @@ import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.mapper.VehicleDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.VehicleDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.VehicleRepository;
+import com.mvpnest.fleetmanagement.service.HierarchyService;
 import com.mvpnest.fleetmanagement.service.NotificationService;
 import com.mvpnest.fleetmanagement.service.VehicleDocumentService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
     private final VehicleDocumentRepository vehicleDocumentRepository;
     private final VehicleDocumentMapper mapper;
     private final NotificationService notificationService;
+    private final HierarchyService hierarchyService;
 
 
     @Value("${app.upload.dir}")
@@ -57,28 +59,6 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
         return mapper.toDTO(document);
     }
 
-    private boolean isInHierarchy(User currentUser, User other) {
-
-        if (other == null) return false;
-
-        if (other.getId().equals(currentUser.getId())) return true;
-
-        User walkUp = other;
-        while (walkUp != null) {
-            if (walkUp.getId().equals(currentUser.getId())) return true;
-            walkUp = walkUp.getAdmin();
-        }
-
-        walkUp = currentUser;
-        while (walkUp != null) {
-            if (walkUp.getId().equals(other.getId())) return true;
-            walkUp = walkUp.getAdmin();
-        }
-
-        return false;
-
-    }
-
 
     @Override
     public List<VehicleDocumentDTO> getAllDocuments(User currentUser) {
@@ -87,7 +67,20 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
             return vehicleDocumentRepository.findAll().stream().map(mapper::toDTO).toList();
         }
 
-        return vehicleDocumentRepository.findAll().stream().filter(doc -> isInHierarchy(currentUser, doc.getUploadedBy())).map(mapper::toDTO).toList();
+        return vehicleDocumentRepository.findAll().stream().filter(doc -> {
+
+            User owner = doc.getUploadedBy();
+
+            // Legacy/junk data safety net: if uploadedBy was never set,
+            // fall back to the vehicle's admin as the closest known owner
+            // (matches the fallback pattern used for mission documents).
+            if (owner == null && doc.getVehicle() != null) {
+                owner = doc.getVehicle().getAdmin();
+            }
+
+            return hierarchyService.isInHierarchy(currentUser, owner);
+
+        }).map(mapper::toDTO).toList();
 
     }
 
