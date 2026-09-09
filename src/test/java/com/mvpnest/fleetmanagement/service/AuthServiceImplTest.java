@@ -1,13 +1,12 @@
 package com.mvpnest.fleetmanagement.service;
 
-import com.mvpnest.fleetmanagement.dto.auth.AuthResponse;
+import com.mvpnest.fleetmanagement.dto.auth.LoginOtpResponse;
 import com.mvpnest.fleetmanagement.dto.auth.LoginRequest;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.exception.InvalidCredentialsException;
 import com.mvpnest.fleetmanagement.exception.ResourceNotFoundException;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
-import com.mvpnest.fleetmanagement.security.JwtService;
 import com.mvpnest.fleetmanagement.service.impl.AuthServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +20,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,31 +33,34 @@ class AuthServiceImplTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
-    private JwtService jwtService;
+    private OtpService otpService;
 
     @InjectMocks
     private AuthServiceImpl authService;
 
+
     @Test
-    void login_withValidCredentials_returnsAuthResponseWithToken() {
+    void login_withValidCredentials_sendsOtpAndReturnsOtpResponse() {
 
         LoginRequest request = new LoginRequest();
         request.setEmail("driver@example.com");
         request.setPassword("plainPassword");
 
-        User user = User.builder().id(UUID.randomUUID()).firstName("Ali").lastName("Salem").email("driver@example.com").password("hashedPassword").role(RoleType.DRIVER).build();
+        User user = User.builder().id(UUID.randomUUID()).firstName("Ali").lastName("Salem").email("driver@example.com").phone("+21612345678").password("hashedPassword").role(RoleType.DRIVER).build();
 
         when(userRepository.findByEmail("driver@example.com")).thenReturn(Optional.of(user));
+
         when(passwordEncoder.matches("plainPassword", "hashedPassword")).thenReturn(true);
-        when(jwtService.generateToken("driver@example.com")).thenReturn("fake-jwt-token");
 
-        AuthResponse response = authService.login(request);
+        LoginOtpResponse response = authService.login(request);
 
-        assertThat(response.getToken()).isEqualTo("fake-jwt-token");
-        assertThat(response.getEmail()).isEqualTo("driver@example.com");
-        assertThat(response.getRole()).isEqualTo("DRIVER");
+        assertThat(response.getMessage()).isEqualTo("OTP sent successfully");
 
+        assertThat(response.isRequiresOtp()).isTrue();
+
+        verify(otpService).generateAndSendOtp(user);
     }
+
 
     @Test
     void login_withUnknownEmail_throwsResourceNotFoundException() {

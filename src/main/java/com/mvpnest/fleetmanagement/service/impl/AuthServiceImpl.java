@@ -9,6 +9,7 @@ import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.security.JwtService;
 import com.mvpnest.fleetmanagement.service.AuthService;
 import com.mvpnest.fleetmanagement.service.EmailService;
+import com.mvpnest.fleetmanagement.service.OtpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,12 +31,14 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final EmailService emailService;
+    private final OtpService otpService;
+
 
     @Value("${app.upload.dir}")
     private String uploadDir;
 
     @Override
-    public AuthResponse login(LoginRequest request) {
+    public LoginOtpResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -43,10 +46,18 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidCredentialsException("Invalid password");
         }
 
-        String token = jwtService.generateToken(user.getEmail());
+        otpService.generateAndSendOtp(user);
 
-        return AuthResponse.builder().id(user.getId()).token(token).email(user.getEmail()).phone(user.getPhone()).role(user.getRole().name()).firstName(user.getFirstName()).lastName(user.getLastName()).imageUrl(user.getImageUrl()).build();
+        return LoginOtpResponse.builder().message("OTP sent successfully").requiresOtp(true).build();
 
+    }
+
+    @Override
+    public void resendOtp(String email) {
+
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        otpService.generateAndSendOtp(user);
     }
 
     @Override
@@ -127,4 +138,15 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
     }
+
+    @Override
+    public AuthResponse verifyOtp(VerifyOtpRequest request) {
+
+        User user = otpService.verifyOtp(request);
+
+        String token = jwtService.generateToken(user.getEmail());
+
+        return AuthResponse.builder().id(user.getId()).token(token).email(user.getEmail()).phone(user.getPhone()).role(user.getRole().name()).firstName(user.getFirstName()).lastName(user.getLastName()).imageUrl(user.getImageUrl()).build();
+    }
+
 }

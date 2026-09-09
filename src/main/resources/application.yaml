@@ -56,6 +56,10 @@ app:
 
   base-url: ${APP_BASE_URL}
 
+textbee:
+  api-key: ${TEXTBEE_API_KEY}
+  device-id: ${TEXTBEE_DEVICE_ID}
+
 management:
   endpoints:
     web:

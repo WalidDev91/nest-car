@@ -14,7 +14,6 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // ================== REGISTER ==================
     @PostMapping(value = "/register", consumes = "multipart/form-data")
     public ResponseEntity<AuthResponse> register(@RequestPart("user") RegisterRequest request, @RequestPart(value = "image", required = false) MultipartFile image) {
 
@@ -22,10 +21,22 @@ public class AuthController {
 
     }
 
-    // ================== LOGIN ==================
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginOtpResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<AuthResponse> verifyOtp(@RequestBody VerifyOtpRequest request) {
+        return ResponseEntity.ok(authService.verifyOtp(request));
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<?> resendOtp(@RequestParam String email) {
+
+        authService.resendOtp(email);
+
+        return ResponseEntity.ok("OTP resent successfully");
     }
 
     @PostMapping("/forgot-password")
@@ -40,6 +51,5 @@ public class AuthController {
         authService.resetPassword(request);
         return ResponseEntity.ok("Password updated");
     }
-
 
 }
