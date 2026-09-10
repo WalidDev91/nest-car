@@ -10,7 +10,6 @@ import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.mapper.VehicleDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.VehicleDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.VehicleRepository;
-import com.mvpnest.fleetmanagement.service.HierarchyService;
 import com.mvpnest.fleetmanagement.service.NotificationService;
 import com.mvpnest.fleetmanagement.service.VehicleDocumentService;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +39,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
     private final VehicleDocumentRepository vehicleDocumentRepository;
     private final VehicleDocumentMapper mapper;
     private final NotificationService notificationService;
-    private final HierarchyService hierarchyService;
+    private final HierarchyServiceImpl hierarchyServiceImpl;
 
 
     @Value("${app.upload.dir}")
@@ -78,7 +77,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
                 owner = doc.getVehicle().getAdmin();
             }
 
-            return hierarchyService.isInHierarchy(currentUser, owner);
+            return hierarchyServiceImpl.isInHierarchy(currentUser, owner);
 
         }).map(mapper::toDTO).toList();
 

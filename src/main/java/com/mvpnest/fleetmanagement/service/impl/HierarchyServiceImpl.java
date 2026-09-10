@@ -1,4 +1,4 @@
-package com.mvpnest.fleetmanagement.service;
+package com.mvpnest.fleetmanagement.service.impl;
 
 import com.mvpnest.fleetmanagement.entity.User;
 import org.springframework.stereotype.Service;
@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-public class HierarchyService {
+public class HierarchyServiceImpl {
 
     public boolean isInHierarchy(User currentUser, User other) {
 

@@ -11,7 +11,6 @@ import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.mapper.MissionDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.MissionDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.MissionRepository;
-import com.mvpnest.fleetmanagement.service.HierarchyService;
 import com.mvpnest.fleetmanagement.service.MissionDocumentService;
 import com.mvpnest.fleetmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +41,7 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
     private final MissionDocumentRepository missionDocumentRepository;
     private final MissionDocumentMapper mapper;
     private final NotificationService notificationService;
-    private final HierarchyService hierarchyService;
+    private final HierarchyServiceImpl hierarchyServiceImpl;
 
 
     @Value("${app.upload.dir}")
@@ -82,7 +81,7 @@ public class MissionDocumentServiceImpl implements MissionDocumentService {
                 owner = doc.getMission().getDriver();
             }
 
-            return hierarchyService.isInHierarchy(currentUser, owner);
+            return hierarchyServiceImpl.isInHierarchy(currentUser, owner);
 
         }).map(mapper::toDTO).toList();
 

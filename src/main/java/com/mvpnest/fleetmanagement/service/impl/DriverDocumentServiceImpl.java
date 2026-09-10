@@ -13,7 +13,6 @@ import com.mvpnest.fleetmanagement.mapper.DriverDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.DriverDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.service.DriverDocumentService;
-import com.mvpnest.fleetmanagement.service.HierarchyService;
 import com.mvpnest.fleetmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,7 +43,7 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
     private final UserRepository userRepository;
     private final DriverDocumentMapper mapper;
     private final NotificationService notificationService;
-    private final HierarchyService hierarchyService;
+    private final HierarchyServiceImpl hierarchyServiceImpl;
 
 
     @Value("${app.upload.dir}")
@@ -70,7 +69,7 @@ public class DriverDocumentServiceImpl implements DriverDocumentService {
             return driverDocumentRepository.findAll().stream().map(mapper::toDTO).toList();
         }
 
-        return driverDocumentRepository.findAll().stream().filter(doc -> hierarchyService.isInHierarchy(currentUser, doc.getDriver())).map(mapper::toDTO).toList();
+        return driverDocumentRepository.findAll().stream().filter(doc -> hierarchyServiceImpl.isInHierarchy(currentUser, doc.getDriver())).map(mapper::toDTO).toList();
 
     }
 
