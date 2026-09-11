@@ -11,6 +11,7 @@ import com.mvpnest.fleetmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -219,29 +220,153 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Scheduled(cron = "0 0 8 * * *") // every day at 08:00
+    @Transactional
     public void checkExpiringDocuments() {
 
-        LocalDate threshold = LocalDate.now().plusDays(EXPIRY_REMINDER_DAYS_AHEAD);
+        System.out.println("========================================");
+        System.out.println("🔥 EXPIRY SCHEDULER STARTED");
+        System.out.println("🔥 Time: " + LocalDateTime.now());
+        System.out.println("========================================");
 
-        driverDocumentRepository.findAll().stream().filter(doc -> doc.getExpiryDate() != null && !doc.getExpiryDate().isAfter(threshold) && !doc.getExpiryDate().isBefore(LocalDate.now())).forEach(doc -> remindIfNotAlreadySent(doc.getDriver(), NotificationType.DOCUMENT_EXPIRING_SOON, "Document expiring soon", "Your document \"" + doc.getTitle() + "\" expires on " + doc.getExpiryDate() + ".", "/profile"));
+        LocalDate today = LocalDate.now();
+        LocalDate threshold = today.plusDays(EXPIRY_REMINDER_DAYS_AHEAD);
 
-        vehicleDocumentRepository.findAll().stream().filter(doc -> doc.getExpiryDate() != null && !doc.getExpiryDate().isAfter(threshold) && !doc.getExpiryDate().isBefore(LocalDate.now())).forEach(doc -> remindIfNotAlreadySent(doc.getUploadedBy(), NotificationType.DOCUMENT_EXPIRING_SOON, "Vehicle document expiring soon", "Vehicle document \"" + doc.getTitle() + "\" expires on " + doc.getExpiryDate() + ".", "/documents"));
+        System.out.println("📅 Today: " + today);
+        System.out.println("📅 Threshold: " + threshold);
+        System.out.println("📅 Reminder days: " + EXPIRY_REMINDER_DAYS_AHEAD);
 
+        // =====================================================
+        // DRIVER DOCUMENTS
+        // =====================================================
+
+        List<DriverDocument> driverDocs = driverDocumentRepository.findAll();
+
+        System.out.println("🚗 Driver documents found: " + driverDocs.size());
+
+        driverDocs.forEach(doc -> {
+
+            if (doc.getExpiryDate() == null) {
+                System.out.println("DRIVER DOC: " + doc.getTitle() + " | expiry=NULL | skipped");
+                return;
+            }
+
+            LocalDate expiryDate = doc.getExpiryDate();
+
+            System.out.println("DRIVER DOC: " + doc.getTitle() + " | expiry=" + expiryDate);
+
+            User driver = doc.getDriver();
+
+            System.out.println("👤 Driver: " + (driver != null ? driver.getFirstName() + " " + driver.getLastName() : "NULL"));
+
+            // Already expired
+            if (expiryDate.isBefore(today)) {
+
+                System.out.println("🔴 DRIVER DOC EXPIRED: " + doc.getTitle());
+
+                remindIfNotAlreadySent(driver, NotificationType.DOCUMENT_EXPIRED, "Document expired", "Your document \"" + doc.getTitle() + "\" expired on " + expiryDate + ".", "/profile");
+
+                return;
+            }
+
+            // Expiring soon
+            if (!expiryDate.isAfter(threshold)) {
+
+                System.out.println("🟡 DRIVER DOC EXPIRING SOON: " + doc.getTitle());
+
+                remindIfNotAlreadySent(driver, NotificationType.DOCUMENT_EXPIRING_SOON, "Document expiring soon", "Your document \"" + doc.getTitle() + "\" expires on " + expiryDate + ".", "/profile");
+
+                return;
+            }
+
+            System.out.println("🟢 DRIVER DOC NOT REQUIRING NOTIFICATION: " + doc.getTitle());
+        });
+
+        // =====================================================
+        // VEHICLE DOCUMENTS
+        // =====================================================
+
+        List<VehicleDocument> vehicleDocs = vehicleDocumentRepository.findAll();
+
+        System.out.println("🚙 Vehicle documents found: " + vehicleDocs.size());
+
+        vehicleDocs.forEach(doc -> {
+
+            if (doc.getExpiryDate() == null) {
+                System.out.println("VEHICLE DOC: " + doc.getTitle() + " | expiry=NULL | skipped");
+                return;
+            }
+
+            LocalDate expiryDate = doc.getExpiryDate();
+
+            System.out.println("VEHICLE DOC: " + doc.getTitle() + " | expiry=" + expiryDate);
+
+            User uploader = doc.getUploadedBy();
+
+            System.out.println("👤 Uploader: " + (uploader != null ? uploader.getFirstName() + " " + uploader.getLastName() : "NULL"));
+
+            // Already expired
+            if (expiryDate.isBefore(today)) {
+
+                System.out.println("🔴 VEHICLE DOC EXPIRED: " + doc.getTitle());
+
+                remindIfNotAlreadySent(uploader, NotificationType.DOCUMENT_EXPIRED, "Vehicle document expired", "Vehicle document \"" + doc.getTitle() + "\" expired on " + expiryDate + ".", "/documents");
+
+                return;
+            }
+
+            // Expiring soon
+            if (!expiryDate.isAfter(threshold)) {
+
+                System.out.println("🟡 VEHICLE DOC EXPIRING SOON: " + doc.getTitle());
+
+                remindIfNotAlreadySent(uploader, NotificationType.DOCUMENT_EXPIRING_SOON, "Vehicle document expiring soon", "Vehicle document \"" + doc.getTitle() + "\" expires on " + expiryDate + ".", "/documents");
+
+                return;
+            }
+
+            System.out.println("🟢 VEHICLE DOC NOT REQUIRING NOTIFICATION: " + doc.getTitle());
+        });
+
+        System.out.println("========================================");
+        System.out.println("🔥 EXPIRY SCHEDULER FINISHED");
+        System.out.println("========================================");
     }
+
 
     private void remindIfNotAlreadySent(User recipient, NotificationType type, String title, String message, String link) {
 
-        if (recipient == null) return;
+        System.out.println("➡️ remindIfNotAlreadySent() called");
 
-        // Don't spam — skip if a reminder for this exact link was already sent in the last 24h.
+        if (recipient == null) {
+            System.out.println("❌ Recipient is NULL");
+            return;
+        }
+
+        System.out.println("👤 Recipient: " + recipient.getFirstName() + " " + recipient.getLastName());
+
+        System.out.println("📝 Message: " + message);
+        System.out.println("🔗 Link: " + link);
+        System.out.println("🔔 Type: " + type);
+
         List<Notification> recent = notificationRepository.findByLinkAndTypeAndCreatedAtAfter(link, type, LocalDateTime.now().minusHours(24));
+
+        System.out.println("🔎 Recent notifications found: " + recent.size());
 
         boolean alreadySentToThisUser = recent.stream().anyMatch(n -> n.getRecipient().getId().equals(recipient.getId()) && n.getMessage().equals(message));
 
-        if (alreadySentToThisUser) return;
+        System.out.println("🔎 Already sent to this user? " + alreadySentToThisUser);
+
+        if (alreadySentToThisUser) {
+            System.out.println("⛔ SKIPPING DUPLICATE NOTIFICATION");
+            return;
+        }
+
+        System.out.println("✅ CREATING NOTIFICATION NOW");
 
         createNotification(recipient, type, title, message, link);
 
+        System.out.println("✅ NOTIFICATION SAVED");
     }
+
 
 }
