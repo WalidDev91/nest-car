@@ -8,8 +8,10 @@ import com.mvpnest.fleetmanagement.mapper.MissionVehicleInspectionMapper;
 import com.mvpnest.fleetmanagement.repository.MissionRepository;
 import com.mvpnest.fleetmanagement.repository.MissionVehicleInspectionRepository;
 import com.mvpnest.fleetmanagement.service.MissionVehicleInspectionService;
+import com.mvpnest.fleetmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,16 +24,19 @@ public class MissionVehicleInspectionServiceImpl implements MissionVehicleInspec
     private final MissionVehicleInspectionRepository inspectionRepository;
     private final MissionRepository missionRepository;
     private final MissionVehicleInspectionMapper mapper;
+    private final NotificationService notificationService;
 
     @Override
+    @Transactional
     public MissionVehicleInspectionDTO saveInspection(UUID missionId, MissionInspectionRequest request) {
 
         Mission mission = missionRepository.findById(missionId).orElseThrow(() -> new RuntimeException("Mission not found"));
 
         MissionVehicleInspection inspection = inspectionRepository.findByMissionIdAndInspectionType(missionId, request.getInspectionType()).orElse(null);
 
-        if (inspection == null) {
+        boolean isNewInspection = inspection == null;
 
+        if (isNewInspection) {
             inspection = MissionVehicleInspection.builder().mission(mission).inspectionType(request.getInspectionType()).inspectionDate(LocalDateTime.now()).build();
         }
 
@@ -45,7 +50,13 @@ public class MissionVehicleInspectionServiceImpl implements MissionVehicleInspec
         inspection.setAccidentOccurred(request.getAccidentOccurred());
         inspection.setNotes(request.getNotes());
 
-        return mapper.toDTO(inspectionRepository.save(inspection));
+        MissionVehicleInspection saved = inspectionRepository.save(inspection);
+
+        if (isNewInspection) {
+            notificationService.notifyInspectionCompleted(saved);
+        }
+
+        return mapper.toDTO(saved);
     }
 
     @Override

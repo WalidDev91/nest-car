@@ -369,4 +369,18 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
 
+    @Override
+    public void notifyInspectionCompleted(MissionVehicleInspection inspection) {
+
+        if (inspection == null || inspection.getMission() == null) return;
+
+        Mission mission = inspection.getMission();
+        User driver = mission.getDriver();
+
+        if (driver == null) return;
+
+        createNotification(driver, NotificationType.INSPECTION_COMPLETED, "Inspection completed", "The " + inspection.getInspectionType() + " inspection for mission \"" + mission.getTitle() + "\" has been completed.", "/missions");
+    }
+
+
 }

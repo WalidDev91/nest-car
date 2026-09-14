@@ -1,11 +1,7 @@
 package com.mvpnest.fleetmanagement.service;
 
 import com.mvpnest.fleetmanagement.dto.notification.NotificationDTO;
-import com.mvpnest.fleetmanagement.entity.DriverDocument;
-import com.mvpnest.fleetmanagement.entity.Mission;
-import com.mvpnest.fleetmanagement.entity.MissionDocument;
-import com.mvpnest.fleetmanagement.entity.UserRequest;
-import com.mvpnest.fleetmanagement.entity.VehicleDocument;
+import com.mvpnest.fleetmanagement.entity.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,5 +33,7 @@ public interface NotificationService {
     void notifyRequestReviewed(UserRequest request);
 
     void checkExpiringDocuments();
+
+    void notifyInspectionCompleted(MissionVehicleInspection inspection);
 
 }
