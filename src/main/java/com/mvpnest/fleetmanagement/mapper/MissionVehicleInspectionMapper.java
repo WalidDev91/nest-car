@@ -5,12 +5,10 @@ import com.mvpnest.fleetmanagement.entity.MissionVehicleInspection;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-
 @Mapper(componentModel = "spring")
 public interface MissionVehicleInspectionMapper {
 
-    @Mapping(source = "mission.id", target = "missionId")
-    @Mapping(source = "mission.title", target = "missionTitle")
+    @Mapping(target = "photoIds", expression = "java(inspection.getPhotos() != null ? inspection.getPhotos().stream().map(photo -> photo.getId()).collect(java.util.stream.Collectors.toList()) : java.util.List.of())")
     MissionVehicleInspectionDTO toDTO(MissionVehicleInspection inspection);
 
 }

@@ -23,6 +23,8 @@ public interface UserService {
 
     UserDTO updateSupervisor(UUID userId, UpdateSupervisorRequest request);
 
+    List<UserDTO> getAssignableDrivers(UUID currentUserId);
+
     void changeRole(UUID id, RoleType role);
 
     void activateUser(UUID id);

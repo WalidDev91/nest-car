@@ -48,30 +48,27 @@ public class Mission extends BaseEntity {
 
     // ================== ASSOCIATIONS ==================
 
-    // 1️⃣ Mission (*) → User (1) "drivers"
+    // Mission (*) → User (1)
     @ManyToOne
     @JoinColumn(name = "driver_id")
     private User driver;
-    // fix: each mission is assigned to one driver
 
-    // 2️⃣ Mission (*) → Vehicle (1)
+    // Mission (*) → Vehicle (1)
     @ManyToOne
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
-    // fix: each mission uses one vehicle
 
-    // 3️⃣ Mission (1) → MissionDocument (*)
+    // Mission (1) → MissionDocument (*)
     @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default
     private List<MissionDocument> missionDocuments = new ArrayList<>();
-    // fix: one mission can have multiple mission documents
 
-    // 4️⃣ Mission (1) → MissionVehicleInspection (1)
-    @OneToOne(mappedBy = "mission", cascade = CascadeType.ALL, orphanRemoval = true)
-    private MissionVehicleInspection vehicleInspection;
-    // fix: each mission has exactly one vehicle inspection
-
+    // Mission (1) → MissionVehicleInspection (*)
+    @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @Builder.Default
+    private List<MissionVehicleInspection> vehicleInspections = new ArrayList<>();
 
     @Column(nullable = true)
     @Builder.Default

@@ -1,6 +1,7 @@
 package com.mvpnest.fleetmanagement.controller;
 
 import com.mvpnest.fleetmanagement.dto.mission.*;
+import com.mvpnest.fleetmanagement.dto.missionvehicleinspection.MissionInspectionRequest;
 import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import com.mvpnest.fleetmanagement.service.MissionService;
 import lombok.RequiredArgsConstructor;
@@ -19,76 +20,91 @@ public class MissionController {
 
     @PostMapping
     public MissionDTO create(@RequestBody CreateMissionRequest request) {
+
         return missionService.createMission(request);
     }
 
     @GetMapping("/{id}")
     public MissionDTO getById(@PathVariable UUID id) {
+
         return missionService.getMissionById(id);
     }
 
     @GetMapping
     public List<MissionDTO> getAll() {
+
         return missionService.getAllMissions();
     }
 
     @PutMapping("/{id}")
     public MissionDTO update(@PathVariable UUID id, @RequestBody UpdateMissionRequest request) {
+
         return missionService.updateMission(id, request);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
+
         missionService.deleteMission(id);
     }
 
     @GetMapping("/vehicle/{vehicleId}")
     public List<MissionDTO> getByVehicle(@PathVariable UUID vehicleId) {
+
         return missionService.getMissionsByVehicleId(vehicleId);
     }
 
     @GetMapping("/status/{status}")
     public List<MissionDTO> getByStatus(@PathVariable MissionStatus status) {
+
         return missionService.getMissionsByStatus(status);
     }
 
     @GetMapping("/departure/{departureLocation}")
     public List<MissionDTO> getByDeparture(@PathVariable String departureLocation) {
+
         return missionService.getMissionsByDepartureLocation(departureLocation);
     }
 
     @GetMapping("/destination/{destinationLocation}")
     public List<MissionDTO> getByDestination(@PathVariable String destinationLocation) {
+
         return missionService.getMissionsByDestinationLocation(destinationLocation);
     }
 
     @PatchMapping("/{id}/assignment")
     public MissionDTO assignMission(@PathVariable UUID id, @RequestBody MissionAssignmentRequest request) {
+
         return missionService.assignMission(id, request);
     }
 
     @PatchMapping("/{id}/verification")
     public MissionDTO updateDocumentsVerification(@PathVariable UUID id, @RequestParam(required = false) Boolean verified) {
+
         return missionService.updateDocumentsVerification(id, verified);
     }
 
     @PostMapping("/{id}/inspection")
     public MissionDTO saveInspection(@PathVariable UUID id, @RequestBody MissionInspectionRequest request) {
+
         return missionService.saveInspection(id, request);
     }
 
-    @PostMapping("/{id}/inspection/photos")
-    public MissionDTO uploadInspectionPhoto(@PathVariable UUID id, @RequestPart("file") MultipartFile file, @RequestParam(required = false) String description) {
-        return missionService.uploadInspectionPhoto(id, file, description);
+    @PostMapping("/inspections/{inspectionId}/photos")
+    public MissionDTO uploadInspectionPhoto(@PathVariable UUID inspectionId, @RequestPart("file") MultipartFile file, @RequestParam(required = false) String description) {
+
+        return missionService.uploadInspectionPhoto(inspectionId, file, description);
     }
 
-    @DeleteMapping("/{id}/inspection")
-    public MissionDTO deleteInspection(@PathVariable UUID id) {
-        return missionService.deleteInspection(id);
+    @DeleteMapping("/inspections/{inspectionId}")
+    public MissionDTO deleteInspection(@PathVariable UUID inspectionId) {
+
+        return missionService.deleteInspection(inspectionId);
     }
 
-    @DeleteMapping("/{id}/inspection/photos/{photoId}")
-    public MissionDTO deleteInspectionPhoto(@PathVariable UUID id, @PathVariable UUID photoId) {
-        return missionService.deleteInspectionPhoto(id, photoId);
+    @DeleteMapping("/{missionId}/inspection/photos/{photoId}")
+    public MissionDTO deleteInspectionPhoto(@PathVariable UUID missionId, @PathVariable UUID photoId) {
+
+        return missionService.deleteInspectionPhoto(missionId, photoId);
     }
 }

@@ -190,6 +190,20 @@ public class UserController {
 // CHANGE OWN PASSWORD
 // ==========================================================
 
+    @GetMapping("/assignable-drivers")
+    public List<UserDTO> getAssignableDrivers(Authentication authentication) {
+
+        User currentUser = (User) authentication.getPrincipal();
+
+        return userService.getAssignableDrivers(currentUser.getId());
+
+    }
+
+
+// ==========================================================
+// ASSIGNABLE DRIVERS (hierarchy-filtered, for dropdowns)
+// ==========================================================
+
     public static class RoleRequest {
 
         private RoleType role;

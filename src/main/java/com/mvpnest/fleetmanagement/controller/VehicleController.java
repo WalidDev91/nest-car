@@ -3,8 +3,10 @@ package com.mvpnest.fleetmanagement.controller;
 import com.mvpnest.fleetmanagement.dto.vehicle.CreateVehicleRequest;
 import com.mvpnest.fleetmanagement.dto.vehicle.UpdateVehicleRequest;
 import com.mvpnest.fleetmanagement.dto.vehicle.VehicleDTO;
+import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.service.VehicleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -102,6 +104,19 @@ public class VehicleController {
     @DeleteMapping("/{id}/photos/{photoId}")
     public VehicleDTO deletePhoto(@PathVariable UUID id, @PathVariable UUID photoId) {
         return vehicleService.deletePhoto(id, photoId);
+    }
+
+// ==========================================================
+// ASSIGNABLE VEHICLES (hierarchy-filtered, for dropdowns)
+// ==========================================================
+
+    @GetMapping("/assignable")
+    public List<VehicleDTO> getAssignableVehicles(Authentication authentication) {
+
+        User currentUser = (User) authentication.getPrincipal();
+
+        return vehicleService.getAssignableVehicles(currentUser.getId());
+
     }
 
 }

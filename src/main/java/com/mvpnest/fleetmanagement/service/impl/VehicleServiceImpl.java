@@ -35,6 +35,7 @@ public class VehicleServiceImpl implements VehicleService {
     private final UserRepository userRepository;
     private final VehicleMapper vehicleMapper;
     private final VehiclePhotoRepository vehiclePhotoRepository;
+    private final HierarchyServiceImpl hierarchyService;
     @Value("${app.upload.dir}")
     private String uploadDir;
 
@@ -142,5 +143,20 @@ public class VehicleServiceImpl implements VehicleService {
         } catch (IOException e) {
             throw new RuntimeException("Photo deletion failed");
         }
+    }
+
+    @Override
+    public List<VehicleDTO> getAssignableVehicles(UUID currentUserId) {
+
+        User currentUser = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Vehicle> vehicles = vehicleRepository.findAll();
+
+        if (currentUser.getRole() == com.mvpnest.fleetmanagement.enums.RoleType.SUPER_ADMIN) {
+            return vehicles.stream().map(vehicleMapper::toDTO).toList();
+        }
+
+        return vehicles.stream().filter(vehicle -> hierarchyService.isInHierarchy(currentUser, vehicle.getAdmin())).map(vehicleMapper::toDTO).toList();
+
     }
 }

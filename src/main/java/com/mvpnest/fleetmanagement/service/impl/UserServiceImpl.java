@@ -31,6 +31,8 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final HierarchyServiceImpl hierarchyService;
+
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -363,6 +365,22 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return userMapper.toDTO(user);
+
+    }
+
+
+    @Override
+    public List<UserDTO> getAssignableDrivers(UUID currentUserId) {
+
+        User currentUser = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<User> drivers = userRepository.findByRole(RoleType.DRIVER);
+
+        if (currentUser.getRole() == RoleType.SUPER_ADMIN) {
+            return drivers.stream().map(userMapper::toDTO).toList();
+        }
+
+        return drivers.stream().filter(driver -> hierarchyService.isInHierarchy(currentUser, driver)).map(userMapper::toDTO).toList();
 
     }
 

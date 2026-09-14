@@ -3,22 +3,14 @@ package com.mvpnest.fleetmanagement.dto.missionvehicleinspection;
 import com.mvpnest.fleetmanagement.enums.InspectionType;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MissionVehicleInspectionDTO {
-
-    private UUID id;
+public class MissionInspectionRequest {
 
     private InspectionType inspectionType;
-
-    private LocalDateTime inspectionDate;
 
     private Integer mileage;
 
@@ -34,9 +26,7 @@ public class MissionVehicleInspectionDTO {
 
     private String repairStatus;
 
-    private String notes;
-
     private Boolean accidentOccurred;
 
-    private List<UUID> photoIds;
+    private String notes;
 }

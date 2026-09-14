@@ -1,6 +1,7 @@
 package com.mvpnest.fleetmanagement.service;
 
 import com.mvpnest.fleetmanagement.dto.mission.*;
+import com.mvpnest.fleetmanagement.dto.missionvehicleinspection.MissionInspectionRequest;
 import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,10 +34,9 @@ public interface MissionService {
 
     MissionDTO saveInspection(UUID missionId, MissionInspectionRequest request);
 
-    MissionDTO uploadInspectionPhoto(UUID missionId, MultipartFile file, String description);
+    MissionDTO uploadInspectionPhoto(UUID inspectionId, MultipartFile file, String description);
 
-    MissionDTO deleteInspection(UUID missionId);
+    MissionDTO deleteInspection(UUID inspectionId);
 
     MissionDTO deleteInspectionPhoto(UUID missionId, UUID photoId);
-
 }

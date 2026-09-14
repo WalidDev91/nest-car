@@ -1,19 +1,16 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
 import com.mvpnest.fleetmanagement.dto.mission.*;
-import com.mvpnest.fleetmanagement.entity.Mission;
-import com.mvpnest.fleetmanagement.entity.MissionVehicleInspection;
-import com.mvpnest.fleetmanagement.entity.User;
-import com.mvpnest.fleetmanagement.entity.Vehicle;
+import com.mvpnest.fleetmanagement.dto.missionvehicleinspection.MissionInspectionRequest;
+import com.mvpnest.fleetmanagement.entity.*;
+import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
+import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
 import com.mvpnest.fleetmanagement.enums.MissionStatus;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.exception.AvailabilityConflictException;
 import com.mvpnest.fleetmanagement.exception.ResourceNotFoundException;
 import com.mvpnest.fleetmanagement.mapper.MissionMapper;
-import com.mvpnest.fleetmanagement.repository.MissionRepository;
-import com.mvpnest.fleetmanagement.repository.MissionVehicleInspectionRepository;
-import com.mvpnest.fleetmanagement.repository.UserRepository;
-import com.mvpnest.fleetmanagement.repository.VehicleRepository;
+import com.mvpnest.fleetmanagement.repository.*;
 import com.mvpnest.fleetmanagement.service.MissionService;
 import com.mvpnest.fleetmanagement.service.MissionVehicleInspectionService;
 import com.mvpnest.fleetmanagement.service.MissionVehiclePhotoService;
@@ -38,6 +35,7 @@ public class MissionServiceImpl implements MissionService {
     private final MissionVehiclePhotoService photoService;
     private final MissionMapper missionMapper;
     private final NotificationService notificationService;
+    private final DriverDocumentRepository driverDocumentRepository;
 
     @Override
     public MissionDTO createMission(CreateMissionRequest request) {
@@ -56,6 +54,8 @@ public class MissionServiceImpl implements MissionService {
             if (driver.getRole() != RoleType.DRIVER) {
                 throw new RuntimeException("Selected user is not a driver");
             }
+
+            validateDriverEligibility(driver);
         }
 
         Vehicle vehicle = null;
@@ -119,6 +119,8 @@ public class MissionServiceImpl implements MissionService {
                 throw new RuntimeException("Selected user is not a driver");
             }
 
+            validateDriverEligibility(driver);
+
             mission.setDriver(driver);
 
         } else {
@@ -148,13 +150,12 @@ public class MissionServiceImpl implements MissionService {
 
         Mission saved = missionRepository.save(mission);
 
-        // Only notify if a driver/vehicle was newly assigned (wasn't set before),
-        // to avoid re-notifying on every unrelated edit to an already-assigned mission.
         if (driverWasNull && saved.getDriver() != null) {
             notificationService.notifyMissionAssigned(saved);
         }
 
         if (vehicleWasNull && saved.getVehicle() != null && saved.getDriver() != null) {
+
             notificationService.notifyVehicleAssigned(saved);
         }
 
@@ -207,6 +208,8 @@ public class MissionServiceImpl implements MissionService {
             if (driver.getRole() != RoleType.DRIVER) {
                 throw new RuntimeException("Selected user is not a driver");
             }
+
+            validateDriverEligibility(driver);
         }
 
         Vehicle vehicle = null;
@@ -231,6 +234,7 @@ public class MissionServiceImpl implements MissionService {
         }
 
         if (vehicleWasNull && saved.getVehicle() != null && saved.getDriver() != null) {
+
             notificationService.notifyVehicleAssigned(saved);
         }
 
@@ -243,7 +247,6 @@ public class MissionServiceImpl implements MissionService {
         Mission mission = missionRepository.findById(missionId).orElseThrow(() -> new RuntimeException("Mission not found"));
 
         mission.setDocumentsVerified(verified);
-
         mission.setDocumentsVerificationDate(verified == null ? null : LocalDateTime.now());
 
         return missionMapper.toDTO(missionRepository.save(mission));
@@ -260,28 +263,25 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public MissionDTO uploadInspectionPhoto(UUID missionId, MultipartFile file, String description) {
+    public MissionDTO uploadInspectionPhoto(UUID inspectionId, MultipartFile file, String description) {
 
-        MissionVehicleInspection inspection = inspectionRepository.findByMissionId(missionId).orElseThrow(() -> new RuntimeException("Inspection not found"));
+        MissionVehicleInspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new RuntimeException("Inspection not found"));
 
         photoService.uploadPhoto(file, inspection.getId(), description);
 
-        Mission mission = missionRepository.findById(missionId).orElseThrow(() -> new RuntimeException("Mission not found"));
+        Mission mission = inspection.getMission();
 
         return missionMapper.toDTO(mission);
     }
 
     @Override
-    public MissionDTO deleteInspection(UUID missionId) {
+    public MissionDTO deleteInspection(UUID inspectionId) {
 
-        MissionVehicleInspection inspection = inspectionRepository.findByMissionId(missionId).orElseThrow(() -> new RuntimeException("Inspection not found"));
+        MissionVehicleInspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new RuntimeException("Inspection not found"));
 
         Mission mission = inspection.getMission();
 
-        mission.setVehicleInspection(null);
-        inspection.setMission(null);
-
-        missionRepository.save(mission);
+        inspectionRepository.delete(inspection);
 
         return missionMapper.toDTO(mission);
     }
@@ -343,6 +343,25 @@ public class MissionServiceImpl implements MissionService {
 
         if (vehicleUnavailable) {
             throw new AvailabilityConflictException("Vehicle is not available during this period");
+        }
+    }
+
+    private void validateDriverEligibility(User driver) {
+
+        List<DriverDocument> documents = driverDocumentRepository.findByDriverId(driver.getId());
+
+        DriverDocument license = documents.stream().filter(doc -> doc.getType() == DriverDocumentType.DRIVER_LICENSE).findFirst().orElse(null);
+
+        DriverDocument idCard = documents.stream().filter(doc -> doc.getType() == DriverDocumentType.ID_CARD).findFirst().orElse(null);
+
+        if (license == null || license.getStatus() != DriverDocumentStatus.APPROVED || license.getExpiryDate() == null || license.getExpiryDate().isBefore(java.time.LocalDate.now())) {
+
+            throw new AvailabilityConflictException("Driver is not eligible to work");
+        }
+
+        if (idCard == null || idCard.getStatus() != DriverDocumentStatus.APPROVED || idCard.getExpiryDate() == null || idCard.getExpiryDate().isBefore(java.time.LocalDate.now())) {
+
+            throw new AvailabilityConflictException("Driver is not eligible to work");
         }
     }
 }
