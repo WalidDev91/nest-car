@@ -47,7 +47,7 @@ public class MissionVehicleInspectionServiceImpl implements MissionVehicleInspec
         inspection.setWaterCheck(request.getWaterCheck());
         inspection.setPartsCondition(request.getPartsCondition());
         inspection.setRepairStatus(request.getRepairStatus());
-        inspection.setAccidentOccurred(request.getAccidentOccurred());
+        inspection.setAccidentOccurred(request.getAccidentOccurred() != null ? request.getAccidentOccurred() : false);
         inspection.setNotes(request.getNotes());
 
         MissionVehicleInspection saved = inspectionRepository.save(inspection);

@@ -1,5 +1,6 @@
 package com.mvpnest.fleetmanagement.dto.missionvehicleinspection;
 
+import com.mvpnest.fleetmanagement.dto.missionvehiclephoto.MissionVehiclePhotoDTO;
 import com.mvpnest.fleetmanagement.enums.InspectionType;
 import lombok.*;
 
@@ -34,9 +35,11 @@ public class MissionVehicleInspectionDTO {
 
     private String repairStatus;
 
-    private String notes;
-
     private Boolean accidentOccurred;
 
+    private String notes;
+
     private List<UUID> photoIds;
+
+    private List<MissionVehiclePhotoDTO> photos;
 }

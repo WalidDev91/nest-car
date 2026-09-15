@@ -375,12 +375,17 @@ public class NotificationServiceImpl implements NotificationService {
         if (inspection == null || inspection.getMission() == null) return;
 
         Mission mission = inspection.getMission();
-        User driver = mission.getDriver();
+        Vehicle vehicle = mission.getVehicle();
 
-        if (driver == null) return;
+        if (vehicle == null) return;
 
-        createNotification(driver, NotificationType.INSPECTION_COMPLETED, "Inspection completed", "The " + inspection.getInspectionType() + " inspection for mission \"" + mission.getTitle() + "\" has been completed.", "/missions");
+        User vehicleAdmin = vehicle.getAdmin();
+
+        if (vehicleAdmin == null) return;
+
+        createNotification(vehicleAdmin, NotificationType.INSPECTION_COMPLETED, "Inspection completed", "The inspection for mission \"" + mission.getTitle() + "\" has been completed (" + inspection.getInspectionType().name().toLowerCase() + " inspection).", "/missions");
+
+
     }
-
 
 }
