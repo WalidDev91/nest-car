@@ -72,3 +72,6 @@ venv/
 *.tar
 *.dump
 uploads/
+docker-compose-resolved-backup.yaml
+docker-compose.desktop.yaml
+docker-compose.yaml.backup
