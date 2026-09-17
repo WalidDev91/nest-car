@@ -5,7 +5,8 @@ import com.mvpnest.fleetmanagement.entity.Mission;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = MissionVehicleInspectionMapper.class)
+
 public interface MissionMapper {
 
     @Mapping(target = "driverId", expression = "java(mission.getDriver() != null ? mission.getDriver().getId() : null)")
