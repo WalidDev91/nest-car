@@ -80,6 +80,13 @@ pipeline {
                 }
             }
         }
+
+        stage('Monitoring') {
+            steps {
+                echo 'Prometheus monitoring is configured for Jenkins and the backend.'
+                echo 'Metrics are collected by Prometheus and visualized in Grafana.'
+            }
+        }
     }
 
     post {
