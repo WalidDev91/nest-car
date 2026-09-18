@@ -46,6 +46,8 @@ services:
       APP_BASE_URL: ${APP_BASE_URL}
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fleetdb
       APP_UPLOAD_DIR: /app/uploads
+      TEXTBEE_API_KEY: ${TEXTBEE_API_KEY}
+      TEXTBEE_DEVICE_ID: ${TEXTBEE_DEVICE_ID}
     ports:
       - "8080:8080"
     volumes:
