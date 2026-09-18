@@ -1,4 +1,4 @@
-package com.mvpnest.fleetmanagement.service;
+package com.mvpnest.fleetmanagement.service.impl;
 
 import com.mvpnest.fleetmanagement.dto.vehicle.CreateVehicleRequest;
 import com.mvpnest.fleetmanagement.dto.vehicle.UpdateVehicleRequest;
@@ -8,7 +8,6 @@ import com.mvpnest.fleetmanagement.entity.Vehicle;
 import com.mvpnest.fleetmanagement.exception.ResourceNotFoundException;
 import com.mvpnest.fleetmanagement.mapper.VehicleMapper;
 import com.mvpnest.fleetmanagement.repository.VehicleRepository;
-import com.mvpnest.fleetmanagement.service.impl.VehicleServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

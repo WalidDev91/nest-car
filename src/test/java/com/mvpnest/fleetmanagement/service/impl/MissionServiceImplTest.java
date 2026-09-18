@@ -1,4 +1,4 @@
-package com.mvpnest.fleetmanagement.service;
+package com.mvpnest.fleetmanagement.service.impl;
 
 import com.mvpnest.fleetmanagement.dto.mission.CreateMissionRequest;
 import com.mvpnest.fleetmanagement.dto.mission.MissionDTO;
@@ -13,7 +13,8 @@ import com.mvpnest.fleetmanagement.repository.MissionRepository;
 import com.mvpnest.fleetmanagement.repository.MissionVehicleInspectionRepository;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
 import com.mvpnest.fleetmanagement.repository.VehicleRepository;
-import com.mvpnest.fleetmanagement.service.impl.MissionServiceImpl;
+import com.mvpnest.fleetmanagement.service.MissionVehicleInspectionService;
+import com.mvpnest.fleetmanagement.service.MissionVehiclePhotoService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

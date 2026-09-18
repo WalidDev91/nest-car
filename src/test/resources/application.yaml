@@ -19,6 +19,13 @@ spring:
     username: test@example.com
     password: test-password
 
+JWT_SECRET: dummytestsecretkeythatisatleast32byteslong12345
+APP_BASE_URL: http://localhost:8080
+
+textbee:
+  api-key: dummy_textbee_api_key
+  device-id: dummy_device_id
+
 app:
   upload:
     dir: uploads

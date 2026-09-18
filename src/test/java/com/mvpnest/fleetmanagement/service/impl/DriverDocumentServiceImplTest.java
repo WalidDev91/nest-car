@@ -1,4 +1,4 @@
-package com.mvpnest.fleetmanagement.service;
+package com.mvpnest.fleetmanagement.service.impl;
 
 import com.mvpnest.fleetmanagement.dto.driverdocument.DriverDocumentDTO;
 import com.mvpnest.fleetmanagement.dto.driverdocument.UpdateDriverDocumentRequest;
@@ -10,7 +10,7 @@ import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
 import com.mvpnest.fleetmanagement.mapper.DriverDocumentMapper;
 import com.mvpnest.fleetmanagement.repository.DriverDocumentRepository;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
-import com.mvpnest.fleetmanagement.service.impl.DriverDocumentServiceImpl;
+import com.mvpnest.fleetmanagement.service.NotificationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -42,6 +42,8 @@ class DriverDocumentServiceImplTest {
     private UserRepository userRepository;
     @Mock
     private DriverDocumentMapper mapper;
+    @Mock
+    private NotificationService notificationService;
     @InjectMocks
     private DriverDocumentServiceImpl driverDocumentService;
 

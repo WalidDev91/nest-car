@@ -1,4 +1,4 @@
-package com.mvpnest.fleetmanagement.service;
+package com.mvpnest.fleetmanagement.service.impl;
 
 import com.mvpnest.fleetmanagement.dto.auth.LoginOtpResponse;
 import com.mvpnest.fleetmanagement.dto.auth.LoginRequest;
@@ -7,7 +7,7 @@ import com.mvpnest.fleetmanagement.enums.RoleType;
 import com.mvpnest.fleetmanagement.exception.InvalidCredentialsException;
 import com.mvpnest.fleetmanagement.exception.ResourceNotFoundException;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
-import com.mvpnest.fleetmanagement.service.impl.AuthServiceImpl;
+import com.mvpnest.fleetmanagement.service.OtpService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
