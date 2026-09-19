@@ -13,16 +13,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Ensure path ends with a slash
+        String path = uploadDir.endsWith("/") ? uploadDir : uploadDir + "/";
 
-        registry.addResourceHandler("/uploads/users/**")
-                .addResourceLocations("file:" + uploadDir + "/users/");
-
-        registry.addResourceHandler("/uploads/vehicles/**")
-                .addResourceLocations("file:" + uploadDir + "/vehicles/");
-
-        registry.addResourceHandler("/uploads/mission-vehicle-photos/**")
-                .addResourceLocations("file:" + uploadDir + "/mission-vehicle-photos/");
-
+        // Map root /uploads/** to cover all subfolders (users, vehicles, documents, etc.)
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + path);
     }
 
 }

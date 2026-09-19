@@ -27,10 +27,7 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/prometheus").permitAll().
                 requestMatchers("/api/auth/**").permitAll().
 
-                // Only images are publicly accessible — documents stay behind auth
-                requestMatchers("/uploads/users/**").permitAll().
-                requestMatchers("/uploads/vehicles/**").permitAll().
-                requestMatchers("/uploads/mission-vehicle-photos/**").permitAll().
+                requestMatchers("/uploads/**").permitAll().
 
                 requestMatchers("/api/users/**").authenticated().
                 requestMatchers("/api/vehicles/**").authenticated().
