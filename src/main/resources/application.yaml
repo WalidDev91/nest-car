@@ -5,6 +5,16 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+  ai:
+    model:
+      audio:
+        speech: none
+    openai:
+      api-key: ${OPENROUTER_API_KEY}
+      base-url: https://openrouter.ai/api
+      chat:
+        options:
+          model: openrouter/free
 
   datasource:
     url: jdbc:postgresql://localhost:5432/fleetdb
