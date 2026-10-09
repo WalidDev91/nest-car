@@ -151,7 +151,7 @@ public class AssistantServiceImpl implements AssistantService {
 
     private final ChatClient.Builder chatClientBuilder;
     private final AssistantToolService assistantToolService;
-    private final ChatMemory chatMemory = MessageWindowChatMemory.builder().chatMemoryRepository(new InMemoryChatMemoryRepository()).maxMessages(10).build();
+    private final ChatMemory chatMemory = MessageWindowChatMemory.builder().chatMemoryRepository(new InMemoryChatMemoryRepository()).maxMessages(20).build();
 
     @Override
     public String chat(String message) {
