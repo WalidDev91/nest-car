@@ -28,4 +28,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", ex.getMessage()));
     }
 
+    @ExceptionHandler(AccountDeactivatedException.class)
+    public ResponseEntity<Map<String, String>> handleAccountDeactivated(AccountDeactivatedException ex) {
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", ex.getMessage(), "code", "ACCOUNT_DEACTIVATED"));
+    }
+
 }

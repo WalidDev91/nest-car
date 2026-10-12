@@ -19,6 +19,10 @@ spring:
     username: test@example.com
     password: test-password
 
+  ai:
+    openai:
+      api-key: dummy_openai_test_api_key_for_spring_context
+
 JWT_SECRET: dummytestsecretkeythatisatleast32byteslong12345
 APP_BASE_URL: http://localhost:8080
 

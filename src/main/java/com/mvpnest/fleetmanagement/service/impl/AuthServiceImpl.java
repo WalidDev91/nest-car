@@ -3,6 +3,7 @@ package com.mvpnest.fleetmanagement.service.impl;
 import com.mvpnest.fleetmanagement.dto.auth.*;
 import com.mvpnest.fleetmanagement.entity.User;
 import com.mvpnest.fleetmanagement.enums.RoleType;
+import com.mvpnest.fleetmanagement.exception.AccountDeactivatedException;
 import com.mvpnest.fleetmanagement.exception.InvalidCredentialsException;
 import com.mvpnest.fleetmanagement.exception.ResourceNotFoundException;
 import com.mvpnest.fleetmanagement.repository.UserRepository;
@@ -44,6 +45,11 @@ public class AuthServiceImpl implements AuthService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException("Invalid password");
+        }
+
+
+        if (!user.isValidate()) {
+            throw new AccountDeactivatedException("Your account has been deactivated by your super administrator.");
         }
 
         otpService.generateAndSendOtp(user);
