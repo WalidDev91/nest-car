@@ -219,7 +219,7 @@ public class NotificationServiceImpl implements NotificationService {
     // =====================================================
 
     @Override
-    @Scheduled(cron = "0 0 8 * * *") // every day at 08:00
+    @Scheduled(cron = "0 30 17 * * *") // every day at 17:30
     @Transactional
     public void checkExpiringDocuments() {
 

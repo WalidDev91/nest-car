@@ -1,12 +1,12 @@
 package com.mvpnest.fleetmanagement.service.impl;
 
-import com.mvpnest.fleetmanagement.dto.mission.*;
+import com.mvpnest.fleetmanagement.dto.mission.CreateMissionRequest;
+import com.mvpnest.fleetmanagement.dto.mission.MissionAssignmentRequest;
+import com.mvpnest.fleetmanagement.dto.mission.MissionDTO;
+import com.mvpnest.fleetmanagement.dto.mission.UpdateMissionRequest;
 import com.mvpnest.fleetmanagement.dto.missionvehicleinspection.MissionInspectionRequest;
 import com.mvpnest.fleetmanagement.entity.*;
-import com.mvpnest.fleetmanagement.enums.DriverDocumentStatus;
-import com.mvpnest.fleetmanagement.enums.DriverDocumentType;
-import com.mvpnest.fleetmanagement.enums.MissionStatus;
-import com.mvpnest.fleetmanagement.enums.RoleType;
+import com.mvpnest.fleetmanagement.enums.*;
 import com.mvpnest.fleetmanagement.exception.AvailabilityConflictException;
 import com.mvpnest.fleetmanagement.exception.ResourceNotFoundException;
 import com.mvpnest.fleetmanagement.mapper.MissionMapper;
@@ -36,6 +36,7 @@ public class MissionServiceImpl implements MissionService {
     private final MissionMapper missionMapper;
     private final NotificationService notificationService;
     private final DriverDocumentRepository driverDocumentRepository;
+    private final VehicleDocumentRepository vehicleDocumentRepository;
 
     @Override
     public MissionDTO createMission(CreateMissionRequest request) {
@@ -63,6 +64,8 @@ public class MissionServiceImpl implements MissionService {
         if (request.getVehicleId() != null) {
 
             vehicle = vehicleRepository.findById(request.getVehicleId()).orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+            validateVehicleEligibility(vehicle);
         }
 
         validateAvailability(request.getDriverId(), request.getVehicleId(), request.getStartDate(), request.getEndDate());
@@ -130,6 +133,8 @@ public class MissionServiceImpl implements MissionService {
         if (request.getVehicleId() != null) {
 
             Vehicle vehicle = vehicleRepository.findById(request.getVehicleId()).orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+            validateVehicleEligibility(vehicle);
 
             mission.setVehicle(vehicle);
 
@@ -217,6 +222,8 @@ public class MissionServiceImpl implements MissionService {
         if (request.getVehicleId() != null) {
 
             vehicle = vehicleRepository.findById(request.getVehicleId()).orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+            validateVehicleEligibility(vehicle);
         }
 
         validateAvailabilityForUpdate(request.getDriverId(), request.getVehicleId(), mission.getStartDate(), mission.getEndDate(), missionId);
@@ -362,6 +369,19 @@ public class MissionServiceImpl implements MissionService {
         if (idCard == null || idCard.getStatus() != DriverDocumentStatus.APPROVED || idCard.getExpiryDate() == null || idCard.getExpiryDate().isBefore(java.time.LocalDate.now())) {
 
             throw new AvailabilityConflictException("Driver is not eligible to work");
+        }
+    }
+
+    private void validateVehicleEligibility(Vehicle vehicle) {
+
+        List<VehicleDocument> documents = vehicleDocumentRepository.findByVehicleId(vehicle.getId());
+
+        List<VehicleDocumentType> requiredTypes = List.of(VehicleDocumentType.LICENSE, VehicleDocumentType.TECHNICAL_CHECK, VehicleDocumentType.INSURANCE, VehicleDocumentType.VEHICLE_TAX);
+
+        List<String> problems = requiredTypes.stream().filter(type -> documents.stream().noneMatch(doc -> doc.getType() == type && doc.getExpiryDate() != null && !doc.getExpiryDate().isBefore(java.time.LocalDate.now()))).map(type -> type.name().replace('_', ' ').toLowerCase()).toList();
+
+        if (!problems.isEmpty()) {
+            throw new AvailabilityConflictException("Vehicle is not eligible: missing or expired documents (" + String.join(", ", problems) + ")");
         }
     }
 }
