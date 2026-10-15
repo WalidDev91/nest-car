@@ -26,4 +26,6 @@ public interface AssistantToolService {
 
     List<MissionVehicleInspectionDTO> searchInspections(String inspectionType, String inspectionDateFrom, String inspectionDateTo, String mileageFrom, String mileageTo, String fuelLevelFrom, String fuelLevelTo, String repairStatus, String accidentOccurred, String missionId, String vehiclePlateNumber);
 
+    List<String> getVehiclePhotos(String plateNumber);
+
 }

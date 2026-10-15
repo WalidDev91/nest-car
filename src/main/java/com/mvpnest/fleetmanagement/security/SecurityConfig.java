@@ -23,7 +23,7 @@ public class SecurityConfig {
 
         http.cors(cors -> {
         }).csrf(csrf -> csrf.disable()).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth
-
+                // TODO : ADD POSTMAN BACKEND SECURITY
                 .requestMatchers("/actuator/prometheus").permitAll().
                 requestMatchers("/api/auth/**").permitAll().
 

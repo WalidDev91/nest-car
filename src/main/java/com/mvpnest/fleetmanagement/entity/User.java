@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mvpnest.fleetmanagement.enums.RoleType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String lastName;
 
+    @Email
     @Column(nullable = false, unique = true)
     private String email;
 

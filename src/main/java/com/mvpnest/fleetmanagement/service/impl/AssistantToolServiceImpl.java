@@ -28,6 +28,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class AssistantToolServiceImpl implements AssistantToolService {
 
+    // TO CONFIRM (Step 4): folder under which vehicle photo files are served
+    private static final String VEHICLE_PHOTO_BASE_PATH = "/uploads/vehicles/";
     private final UserService userService;
     private final VehicleService vehicleService;
     private final MissionService missionService;
@@ -722,5 +724,25 @@ public class AssistantToolServiceImpl implements AssistantToolService {
 
     private String safe(String value) {
         return value == null ? "" : value;
+    }
+
+    @Override
+    @Tool(description = """
+            Get the photos of a vehicle, identified by its plate number.
+            
+            Returns ready-to-display Markdown image lines.
+            Use this tool whenever the user asks to see, show, or display
+            the photo(s) of a vehicle.
+            """)
+    public List<String> getVehiclePhotos(@ToolParam(description = "Vehicle plate number or partial plate.") String plateNumber) {
+        getAuthenticatedUser();
+
+        String normalizedPlate = normalize(plateNumber);
+
+        if (normalizedPlate.isBlank()) {
+            return List.of();
+        }
+
+        return vehicleService.getAllVehicles().stream().filter(vehicle -> normalize(vehicle.getPlateNumber()).contains(normalizedPlate)).filter(vehicle -> vehicle.getPhotos() != null).flatMap(vehicle -> vehicle.getPhotos().stream().map(photo -> "![" + vehicle.getBrand() + " " + vehicle.getModel() + " (" + vehicle.getPlateNumber() + ")](" + VEHICLE_PHOTO_BASE_PATH + photo.getPhotoUrl() + ")")).limit(5).toList();
     }
 }
