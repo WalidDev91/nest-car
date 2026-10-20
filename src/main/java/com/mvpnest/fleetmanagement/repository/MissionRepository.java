@@ -29,4 +29,9 @@ public interface MissionRepository extends JpaRepository<Mission, UUID> {
     boolean existsByDriverIdAndStartDateLessThanAndEndDateGreaterThanAndIdNot(UUID driverId, LocalDateTime endDate, LocalDateTime startDate, UUID missionId);
 
     boolean existsByVehicleIdAndStartDateLessThanAndEndDateGreaterThanAndIdNot(UUID vehicleId, LocalDateTime endDate, LocalDateTime startDate, UUID missionId);
+
+    // Query methods
+    List<Mission> findByStatusAndStartDateLessThanEqual(MissionStatus status, LocalDateTime now);
+
+    List<Mission> findByStatusAndEndDateLessThanEqual(MissionStatus status, LocalDateTime now);
 }

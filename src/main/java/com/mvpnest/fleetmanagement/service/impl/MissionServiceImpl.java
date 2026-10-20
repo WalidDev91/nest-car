@@ -16,7 +16,9 @@ import com.mvpnest.fleetmanagement.service.MissionVehicleInspectionService;
 import com.mvpnest.fleetmanagement.service.MissionVehiclePhotoService;
 import com.mvpnest.fleetmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -70,7 +72,9 @@ public class MissionServiceImpl implements MissionService {
 
         validateAvailability(request.getDriverId(), request.getVehicleId(), request.getStartDate(), request.getEndDate());
 
-        Mission mission = Mission.builder().title(request.getTitle()).description(request.getDescription()).departureLocation(request.getDepartureLocation()).destinationLocation(request.getDestinationLocation()).startDate(request.getStartDate()).endDate(request.getEndDate()).status(request.getStatus() != null ? request.getStatus() : MissionStatus.PLANNED).driver(driver).vehicle(vehicle).build();
+        MissionStatus initialStatus = determineInitialStatus(request.getStartDate(), request.getEndDate(), request.getStatus());
+
+        Mission mission = Mission.builder().title(request.getTitle()).description(request.getDescription()).departureLocation(request.getDepartureLocation()).destinationLocation(request.getDestinationLocation()).startDate(request.getStartDate()).endDate(request.getEndDate()).status(initialStatus).driver(driver).vehicle(vehicle).build();
 
         Mission saved = missionRepository.save(mission);
 
@@ -149,9 +153,8 @@ public class MissionServiceImpl implements MissionService {
         mission.setStartDate(request.getStartDate());
         mission.setEndDate(request.getEndDate());
 
-        if (request.getStatus() != null) {
-            mission.setStatus(request.getStatus());
-        }
+        MissionStatus updatedStatus = determineInitialStatus(request.getStartDate(), request.getEndDate(), request.getStatus());
+        mission.setStatus(updatedStatus);
 
         Mission saved = missionRepository.save(mission);
 
@@ -383,5 +386,46 @@ public class MissionServiceImpl implements MissionService {
         if (!problems.isEmpty()) {
             throw new AvailabilityConflictException("Vehicle is not eligible: missing or expired documents (" + String.join(", ", problems) + ")");
         }
+    }
+
+    @Scheduled(fixedRate = 60000)
+    @Transactional
+    public void autoUpdateMissionStatus() {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Mission> plannedToStart = missionRepository.findByStatusAndStartDateLessThanEqual(MissionStatus.PLANNED, now);
+
+        for (Mission mission : plannedToStart) {
+            mission.setStatus(MissionStatus.ONGOING);
+        }
+
+        List<Mission> ongoingToComplete = missionRepository.findByStatusAndEndDateLessThanEqual(MissionStatus.ONGOING, now);
+
+        for (Mission mission : ongoingToComplete) {
+            mission.setStatus(MissionStatus.COMPLETED);
+        }
+
+        if (!plannedToStart.isEmpty()) {
+            missionRepository.saveAll(plannedToStart);
+        }
+        if (!ongoingToComplete.isEmpty()) {
+            missionRepository.saveAll(ongoingToComplete);
+        }
+    }
+
+    private MissionStatus determineInitialStatus(LocalDateTime startDate, LocalDateTime endDate, MissionStatus requestedStatus) {
+        if (requestedStatus == MissionStatus.CANCELLED) {
+            return MissionStatus.CANCELLED;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (endDate != null && now.isAfter(endDate)) {
+            return MissionStatus.COMPLETED;
+        } else if (startDate != null && !now.isBefore(startDate)) {
+            return MissionStatus.ONGOING;
+        }
+
+        return MissionStatus.PLANNED;
     }
 }
