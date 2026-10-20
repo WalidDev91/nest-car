@@ -27,9 +27,6 @@ import static org.mockito.Mockito.when;
 class AuthServiceImplTest {
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
@@ -37,6 +34,9 @@ class AuthServiceImplTest {
 
     @InjectMocks
     private AuthServiceImpl authService;
+
+    @Mock
+    private UserRepository userRepository;
 
 
     @Test
@@ -59,6 +59,7 @@ class AuthServiceImplTest {
         assertThat(response.isRequiresOtp()).isTrue();
 
         verify(otpService).generateAndSendOtp(user);
+
     }
 
 
