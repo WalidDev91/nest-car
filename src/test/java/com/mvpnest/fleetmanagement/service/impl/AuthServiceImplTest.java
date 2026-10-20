@@ -46,7 +46,7 @@ class AuthServiceImplTest {
         request.setEmail("driver@example.com");
         request.setPassword("plainPassword");
 
-        User user = User.builder().id(UUID.randomUUID()).firstName("Ali").lastName("Salem").email("driver@example.com").phone("+21612345678").password("hashedPassword").role(RoleType.DRIVER).build();
+        User user = User.builder().id(UUID.randomUUID()).firstName("Ali").lastName("Salem").email("driver@example.com").phone("+21612345678").password("hashedPassword").role(RoleType.DRIVER).isValidate(true).build();
 
         when(userRepository.findByEmail("driver@example.com")).thenReturn(Optional.of(user));
 
