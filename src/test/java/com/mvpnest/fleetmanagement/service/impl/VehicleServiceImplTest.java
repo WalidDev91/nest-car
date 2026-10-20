@@ -28,14 +28,15 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class VehicleServiceImplTest {
 
-    @Mock
-    private VehicleRepository vehicleRepository;
 
     @Mock
     private VehicleMapper vehicleMapper;
 
     @InjectMocks
     private VehicleServiceImpl vehicleService;
+
+    @Mock
+    private VehicleRepository vehicleRepository;
 
     @Test
     void getVehicleById_whenVehicleExists_returnsVehicleDTO() {
