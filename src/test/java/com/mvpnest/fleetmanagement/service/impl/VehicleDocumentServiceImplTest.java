@@ -45,9 +45,6 @@ class VehicleDocumentServiceImplTest {
     private VehicleDocumentRepository vehicleDocumentRepository;
 
     @Mock
-    private VehicleDocumentMapper mapper;
-
-    @Mock
     private MissionRepository missionRepository;
 
     @Mock
@@ -55,6 +52,9 @@ class VehicleDocumentServiceImplTest {
 
     @InjectMocks
     private VehicleDocumentServiceImpl vehicleDocumentService;
+
+    @Mock
+    private VehicleDocumentMapper mapper;
 
     @Test
     void getDocumentById_whenExists_returnsDto() {
